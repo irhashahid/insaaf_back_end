@@ -24,51 +24,88 @@ db.connect((err) => {
 });
 
 
-app.get("/courses", (req, res) => {
-  db.query("SELECT * FROM courses", (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json(result);
+// 1. GET ALL LAWYERS
+// ─────────────────────────────────────────
+app.get('/lawyers', (req, res) => {
+  const sql = 'SELECT * FROM users';
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
   });
 });
 
-
-app.post("/courses", (req, res) => {
-  const { name, description, fee, duration } = req.body;
-
-  const sql =
-    "INSERT INTO courses (name, description, fee, duration) VALUES (?,?,?,?)";
-
-  db.query(sql, [name, description, fee, duration], (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.json({ id: result.insertId });
+// ─────────────────────────────────────────
+// 2. GET SINGLE LAWYER
+// ─────────────────────────────────────────
+app.get('/lawyers/:id', (req, res) => {
+  const sql = 'SELECT * FROM lawyers WHERE id = ?';
+  db.query(sql, [req.params.id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json(results[0]);
   });
 });
 
+// ─────────────────────────────────────────
+// 3. CREATE LAWYER (POST)
+// ─────────────────────────────────────────
+app.post('/lawyers', (req, res) => {
+  const { name, specialization, location, experience, cases, rating, status } = req.body;
 
-app.put("/courses/:id", (req, res) => {
-  const { name, description, fee, duration } = req.body;
-  const id = req.params.id;
+  if (!name || !specialization || !location || !experience || !cases) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
 
-  const sql =
-    "UPDATE courses SET name=?, description=?, fee=?, duration=? WHERE id=?";
+  const sql = `
+    INSERT INTO lawyers (name, specialization, location, experience, cases, rating, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+  const values = [name, specialization, location, experience, cases, rating || '0.0', status || ''];
 
-  db.query(sql, [name, description, fee, duration, id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.json({ message: "Updated" });
+  db.query(sql, values, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(201).json({
+      message: 'Lawyer added successfully',
+      lawyerId: result.insertId,
+    });
   });
 });
 
+// ─────────────────────────────────────────
+// 4. UPDATE LAWYER (PUT)
+// ─────────────────────────────────────────
+app.put('/lawyers/:id', (req, res) => {
+  const { name, specialization, location, experience, cases, rating, status } = req.body;
 
-app.delete("/courses/:id", (req, res) => {
-  const id = req.params.id;
+  const sql = `
+    UPDATE lawyers
+    SET name = ?, specialization = ?, location = ?, experience = ?, cases = ?, rating = ?, status = ?
+    WHERE id = ?
+  `;
+  const values = [name, specialization, location, experience, cases, rating, status, req.params.id];
 
-  db.query("DELETE FROM courses WHERE id=?", [id], (err) => {
-    if (err) return res.status(500).send(err);
-    res.json({ message: "Deleted" });
+  db.query(sql, values, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json({ message: 'Lawyer updated successfully' });
   });
 });
 
+// ─────────────────────────────────────────
+// 5. DELETE LAWYER (DELETE)
+// ─────────────────────────────────────────
+app.delete('/lawyers/:id', (req, res) => {
+  const sql = 'DELETE FROM lawyers WHERE id = ?';
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json({ message: 'Lawyer deleted successfully' });
+  });
+});
 
+// ─────────────────────────────────────────
+// START SERVER
+// ─────────────────────────────────────────
 app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+  console.log('Server running at http://localhost:3000');
 });
