@@ -38,7 +38,7 @@ app.get('/lawyers', (req, res) => {
 // 2. GET SINGLE LAWYER
 // ─────────────────────────────────────────
 app.get('/lawyers/:id', (req, res) => {
-  const sql = 'SELECT * FROM lawyers WHERE id = ?';
+  const sql = 'SELECT * FROM users WHERE id = ?';
   db.query(sql, [req.params.id], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.length === 0) return res.status(404).json({ error: 'Lawyer not found' });
@@ -50,17 +50,14 @@ app.get('/lawyers/:id', (req, res) => {
 // 3. CREATE LAWYER (POST)
 // ─────────────────────────────────────────
 app.post('/lawyers', (req, res) => {
-  const { name, specialization, location, experience, cases, rating, status } = req.body;
+  const { name, specialization, location, experience, cases } = req.body;
 
   if (!name || !specialization || !location || !experience || !cases) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
-  const sql = `
-    INSERT INTO lawyers (name, specialization, location, experience, cases, rating, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-  const values = [name, specialization, location, experience, cases, rating || '0.0', status || ''];
+  const sql = 'INSERT INTO users (name, specialization, location, experience, cases) VALUES (?, ?, ?, ?, ?)';
+  const values = [name, specialization, location, experience, cases];
 
   db.query(sql, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -75,14 +72,14 @@ app.post('/lawyers', (req, res) => {
 // 4. UPDATE LAWYER (PUT)
 // ─────────────────────────────────────────
 app.put('/lawyers/:id', (req, res) => {
-  const { name, specialization, location, experience, cases, rating, status } = req.body;
+  const { name, specialization, location, experience, cases } = req.body;
 
   const sql = `
-    UPDATE lawyers
-    SET name = ?, specialization = ?, location = ?, experience = ?, cases = ?, rating = ?, status = ?
+    UPDATE users
+    SET name = ?, specialization = ?, location = ?, experience = ?, cases = ?
     WHERE id = ?
   `;
-  const values = [name, specialization, location, experience, cases, rating, status, req.params.id];
+  const values = [name, specialization, location, experience, cases, req.params.id];
 
   db.query(sql, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -95,7 +92,7 @@ app.put('/lawyers/:id', (req, res) => {
 // 5. DELETE LAWYER (DELETE)
 // ─────────────────────────────────────────
 app.delete('/lawyers/:id', (req, res) => {
-  const sql = 'DELETE FROM lawyers WHERE id = ?';
+  const sql = 'DELETE FROM users WHERE id = ?';
   db.query(sql, [req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
