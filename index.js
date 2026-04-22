@@ -23,6 +23,64 @@ db.connect((err) => {
   }
 });
 
+// 1. REGISTER
+// ─────────────────────────────────────────
+app.post('/register', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  // Check if email already exists
+  const checkSql = 'SELECT * FROM users WHERE email = ?';
+  db.query(checkSql, [email], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (results.length > 0) {
+      return res.status(409).json({ error: 'Email already registered' });
+    }
+
+    // Insert new user
+    const insertSql = 'INSERT INTO users (email, password) VALUES (?, ?)';
+    db.query(insertSql, [email, password], (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({
+        message: 'User registered successfully',
+        userId: result.insertId,
+      });
+    });
+  });
+});
+
+// ─────────────────────────────────────────
+// 2. LOGIN
+// ─────────────────────────────────────────
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  const sql = 'SELECT * FROM users WHERE email = ? AND password = ?';
+  db.query(sql, [email, password], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (results.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const user = results[0];
+    res.json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    });
+  });
+});
 
 // 1. GET ALL LAWYERS
 // ─────────────────────────────────────────
