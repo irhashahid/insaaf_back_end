@@ -54,13 +54,16 @@ function authMiddleware(req, res, next) {
 // REGISTER
 // ─────────────────────────────────────────
 app.post("/register", async (req, res) => {
+  console.log('check 1');
   const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: "Email & password required" });
   }
+  console.log('check 2');
 
   try {
+    console.log('check 3');
     const [existing] = await db.execute(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -69,9 +72,11 @@ app.post("/register", async (req, res) => {
     if (existing.length > 0) {
       return res.status(409).json({ error: "Email already exists" });
     }
+  console.log('check 4');
+
 
     const hash = await bcrypt.hash(password, 10);
-
+decodeURI()
     const [result] = await db.execute(
       "INSERT INTO users (email, password) VALUES (?, ?)",
       [email, hash]
@@ -91,9 +96,12 @@ app.post("/register", async (req, res) => {
 // LOGIN
 // ─────────────────────────────────────────
 app.post("/login", async (req, res) => {
+  console.log('check 1');
   const { email, password } = req.body;
 
   try {
+  console.log('check 2');
+
     const [users] = await db.execute(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -102,12 +110,14 @@ app.post("/login", async (req, res) => {
     if (users.length === 0) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+    console.log('check 3');
 
     const user = users[0];
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('check 4');
 
-    if (!isMatch) {
+    if (!isatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
@@ -115,7 +125,9 @@ app.post("/login", async (req, res) => {
       { id: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: "1d" }
-    );
+    )
+  console.log('check 5');
+
 
     res.json({
       user: user,
