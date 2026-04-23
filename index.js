@@ -136,8 +136,7 @@ app.put('/lawyers/:id', (req, res) => {
 
   const sql = `
     UPDATE users
-    SET name = ?, specialization = ?, location = ?, experience = ?, cases = ?
-    WHERE id = ?
+    
   `;
   const values = [name, specialization, location, experience, cases, req.params.id];
 
