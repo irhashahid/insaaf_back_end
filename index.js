@@ -31,6 +31,7 @@ app.post('/register', (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
+console.log('check.1')
 
   // Check if email already exists
   const checkSql = 'SELECT * FROM users WHERE email = ?';
@@ -40,6 +41,7 @@ app.post('/register', (req, res) => {
     if (results.length > 0) {
       return res.status(409).json({ error: 'Email already registered' });
     }
+    console.log('check.2')
 
     // Insert new user
     const insertSql = 'INSERT INTO users (email, password) VALUES (?, ?)';
