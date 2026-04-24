@@ -186,14 +186,14 @@ app.get("/lawyers/:id", async (req, res) => {
 // CREATE LAWYER (PROTECTED)
 // ─────────────────────────────────────────
 app.post("/lawyers", authMiddleware, async (req, res) => {
-  const { name, specialization, location, experience, cases, status } = req.body;
+  const { name, email, password, specialization, location, experience, cases, status } = req.body;
 
   try {
     const [result] = await db.execute(
       `INSERT INTO lawyers 
        (name, specialization, location, experience, cases, status, user_id)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, specialization, location, experience, cases, status, req.user.id]
+      [name, email, password, specialization, location, experience, cases, status, req.user.id]
     );
 
     res.status(201).json({
@@ -210,15 +210,17 @@ app.post("/lawyers", authMiddleware, async (req, res) => {
 // UPDATE LAWYER
 // ─────────────────────────────────────────
 app.put("/lawyers/:id", authMiddleware, async (req, res) => {
-  const { name, specialization, location, experience, cases, status } = req.body;
+  const { name, email, password, specialization, location, experience, cases, status } = req.body;
 
   try {
     const [result] = await db.execute(
       `UPDATE lawyers 
-       SET name=?, specialization=?, location=?, experience=?, cases=?, status=?
+       SET name=?, email=?, password=?, specialization=?, location=?, experience=?, cases=?, status=?
        WHERE id=? AND user_id=?`,
       [
         name,
+        email,
+        password,
         specialization,
         location,
         experience,
