@@ -61,7 +61,6 @@ app.post("/register", async (req, res) => {
     return res.status(400).json({ error: "Email & password required" });
   }
 console.log('check.1')
-  console.log('check 2');
 
   try {
     console.log('check 3');
