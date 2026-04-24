@@ -136,7 +136,8 @@ app.put('/lawyers/:id', (req, res) => {
 
   const sql = `
     UPDATE users
-    
+    SET name = ?, specialization = ?, location = ?, experience = ?, cases = ?
+    WHERE id = ?
   `;
   const values = [name, specialization, location, experience, cases, req.params.id];
 
@@ -156,6 +157,43 @@ app.delete('/lawyers/:id', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
     res.json({ message: 'Lawyer deleted successfully' });
+  });
+});
+
+// ─────────────────────────────────────────
+// APPROVE LAWYER (PATCH)
+// ─────────────────────────────────────────
+app.patch('/lawyers/:id/approve', (req, res) => {
+  const sql = 'UPDATE users SET status = 1 WHERE id = ?';
+
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json({ message: 'Lawyer approved successfully' });
+  });
+});
+
+// ─────────────────────────────────────────
+// DISAPPROVE LAWYER (PATCH)
+// ─────────────────────────────────────────
+app.patch('/lawyers/:id/disapprove', (req, res) => {
+  const sql = 'UPDATE users SET status = 0 WHERE id = ?';
+
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json({ message: 'Lawyer disapproved successfully' });
+  });
+});
+
+// ─────────────────────────────────────────
+// GET APPROVED LAWYERS ONLY
+// ─────────────────────────────────────────
+app.get('/lawyers/approved', (req, res) => {
+  const sql = 'SELECT * FROM users WHERE status = 1';
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
   });
 });
 
