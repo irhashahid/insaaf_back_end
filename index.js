@@ -265,10 +265,10 @@ app.delete("/lawyers/:id", authMiddleware, async (req, res) => {
 // ─────────────────────────────────────────
 // APPROVE LAWYER (PATCH)
 // ─────────────────────────────────────────
-app.patch('/lawyers/:id/approve', (req, res) => {
-  const sql = 'UPDATE users SET status = 1 WHERE id = ?';
+app.patch('/lawyers/:id/:status', (req, res) => {
+  const sql = 'UPDATE users SET status = ? WHERE id = ?';
 
-  db.query(sql, [req.params.id], (err, result) => {
+  db.query(sql, [req.params.status, req.params.id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
     res.json({ message: 'Lawyer approved successfully' });
