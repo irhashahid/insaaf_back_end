@@ -60,6 +60,7 @@ app.post("/register", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Email & password required" });
   }
+console.log('check.1')
   console.log('check 2');
 
   try {
@@ -72,11 +73,21 @@ app.post("/register", async (req, res) => {
     if (existing.length > 0) {
       return res.status(409).json({ error: "Email already exists" });
     }
-  console.log('check 4');
+    console.log('check.2')
+
+    // Insert new user
+    const insertSql = 'INSERT INTO users (email, password) VALUES (?, ?)';
+    db.query(insertSql, [email, password], (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({
+        message: 'User registered successfully',
+        userId: result.insertId,
+      });
+    });
 
 
     const hash = await bcrypt.hash(password, 10);
-decodeURI()
+// decodeURI()
     const [result] = await db.execute(
       "INSERT INTO users (email, password) VALUES (?, ?)",
       [email, hash]
@@ -176,14 +187,14 @@ app.get("/lawyers/:id", async (req, res) => {
 // CREATE LAWYER (PROTECTED)
 // ─────────────────────────────────────────
 app.post("/lawyers", authMiddleware, async (req, res) => {
-  const { name, specialization, location, experience, cases } = req.body;
+  const { name, specialization, location, experience, cases, status } = req.body;
 
   try {
     const [result] = await db.execute(
       `INSERT INTO lawyers 
-       (name, specialization, location, experience, cases, user_id)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, specialization, location, experience, cases, req.user.id]
+       (name, specialization, location, experience, cases, status, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [name, specialization, location, experience, cases, status, req.user.id]
     );
 
     res.status(201).json({
@@ -200,12 +211,12 @@ app.post("/lawyers", authMiddleware, async (req, res) => {
 // UPDATE LAWYER
 // ─────────────────────────────────────────
 app.put("/lawyers/:id", authMiddleware, async (req, res) => {
-  const { name, specialization, location, experience, cases } = req.body;
+  const { name, specialization, location, experience, cases, status } = req.body;
 
   try {
     const [result] = await db.execute(
       `UPDATE lawyers 
-       SET name=?, specialization=?, location=?, experience=?, cases=?
+       SET name=?, specialization=?, location=?, experience=?, cases=?, status=?
        WHERE id=? AND user_id=?`,
       [
         name,
@@ -213,6 +224,7 @@ app.put("/lawyers/:id", authMiddleware, async (req, res) => {
         location,
         experience,
         cases,
+        status,
         req.params.id,
         req.user.id,
       ]
@@ -250,6 +262,42 @@ app.delete("/lawyers/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────
+// APPROVE LAWYER (PATCH)
+// ─────────────────────────────────────────
+app.patch('/lawyers/:id/approve', (req, res) => {
+  const sql = 'UPDATE users SET status = 1 WHERE id = ?';
+
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json({ message: 'Lawyer approved successfully' });
+  });
+});
+
+// ─────────────────────────────────────────
+// DISAPPROVE LAWYER (PATCH)
+// ─────────────────────────────────────────
+app.patch('/lawyers/:id/disapprove', (req, res) => {
+  const sql = 'UPDATE users SET status = 0 WHERE id = ?';
+
+  db.query(sql, [req.params.id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Lawyer not found' });
+    res.json({ message: 'Lawyer disapproved successfully' });
+  });
+});
+
+// ─────────────────────────────────────────
+// GET APPROVED LAWYERS ONLY
+// ─────────────────────────────────────────
+app.get('/lawyers/approved', (req, res) => {
+  const sql = 'SELECT * FROM users WHERE status = 1';
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
 // ─────────────────────────────────────────
 // START SERVER
 // ─────────────────────────────────────────
