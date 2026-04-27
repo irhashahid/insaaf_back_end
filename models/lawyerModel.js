@@ -65,4 +65,3 @@ module.exports = {
   deleteLawyer,
   setLawyerStatus,
   getApprovedLawyers,
-};

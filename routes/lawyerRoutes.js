@@ -6,7 +6,7 @@ const {
 } = require("../controllers/lawyerController");
 
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
-router.get("/approved", approved);
+router.get("/approved", approved);b
 router.get("/", index);
 router.get("/:id", show);
 router.post("/", authMiddleware, create);
