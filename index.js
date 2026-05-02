@@ -3,6 +3,7 @@ const cors = require("cors");
 const { initDB } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const lawyerRoutes = require("./routes/lawyerRoutes");
+const caseRoutes = require("./routes/caseRoutes");
 
 const app = express();
 app.use(cors());
