@@ -16,7 +16,7 @@ const getAllCases = () => {
       c.depart_concern,
       c.hearing_date
     FROM cases c
-    LEFT JOIN users   u ON c.client_id = u.id
+    LEFT JOIN users   0 ON c.client_id = u.id
     LEFT JOIN lawyers l ON c.lawyer_id = l.id
   `);
 };
@@ -29,22 +29,22 @@ const createCase = (data) => {
   const {
     description_case, client_id, lawyer_id, phone,
     address, case_type, case_start_date,
-    case_status, depart_concern, hearing_date, payment_status
+     depart_concern, hearing_date, payment_status
   } = data;
   return db.query(
     `INSERT INTO cases 
      (description_case, client_id, lawyer_id, phone, address, case_type,
       case_start_date, case_status, depart_concern, hearing_date, payment_status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ? ?, ?, ?, ?, ?)`,
     [description_case, client_id, lawyer_id, phone, address, case_type,
-     case_start_date, case_status, depart_concern, hearing_date, payment_status]
+     case_start_date, hearing_date, payment_status]
   );
 };
 
 const updateCase = (id, data) => {
   const {
-    description_case, phone, address, case_type,
-    case_start_date, case_status, depart_concern, hearing_date, payment_status
+    description_case, case_type,
+    case_start_date, depart_concern, hearing_date, payment_status
   } = data;
   return db.query(
     `UPDATE cases SET
@@ -53,7 +53,7 @@ const updateCase = (id, data) => {
       hearing_date=?, payment_status=?
      WHERE id=?`,
     [description_case, phone, address, case_type,
-     case_start_date, case_status, depart_concern,
+     case_start_date, depart_concern,
      hearing_date, payment_status, id]
   );
 };
@@ -72,5 +72,5 @@ const getApprovedCases = () => {
 
 module.exports = {
   getAllCases, getCaseById, createCase,
-  updateCase, deleteCase, setCaseStatus, getApprovedCases
+  updateCase, deleteCase, caseStatus, ApprovedCases
 };
