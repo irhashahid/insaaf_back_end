@@ -8,13 +8,6 @@ const getAllCases = () => {
       c.description_case,
       c.client_id,
       c.lawyer_id,
-      c.phone,
-      c.address,
-      c.case_status,
-      c.payment_status,
-      c.case_start_date,
-      c.depart_concern,
-      c.hearing_date
     FROM cases c
     LEFT JOIN users   0 ON c.client_id = u.id
     LEFT JOIN lawyers l ON c.lawyer_id = l.id
@@ -24,6 +17,32 @@ const getAllCases = () => {
 const getCaseById = (id) => {
   return db.query('SELECT * FROM cases WHERE id = ?', [id]);
 };
+async function getLawyerById(id) {
+  const db = getDB();
+  const [rows] = await db.execute("SELECT * FROM lawyers WHERE id = ?", [id]);
+  return rows;
+}
+
+async function createLawyer({ name, specialization, location, experience, cases, status }, userId) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `INSERT INTO lawyers (name, specialization, location, experience, cases, status, user_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [name, specialization, location, experience, cases, status, userId]
+  );
+  return result;
+}
+
+async function updateLawyer({ name, email, password, specialization, location, experience, cases, status }, id, userId) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE lawyers 
+     SET name=?, email=?, password=?, specialization=?, location=?, experience=?, cases=?, status=?
+     WHERE id=? AND user_id=?`,
+    [name, email, password, specialization, location, experience, cases, status, id, userId]
+  );
+  return result;
+}
 
 const createCase = (data) => {
   const {
@@ -42,10 +61,7 @@ const createCase = (data) => {
 };
 
 const updateCase = (id, data) => {
-  const {
-    description_case, case_type,
-    case_start_date, depart_concern, hearing_date, payment_status
-  } = data;
+  const 
   return db.query(
     `UPDATE cases SET
       description_case=?, phone=?, address=?, case_type=?,
@@ -60,10 +76,6 @@ const updateCase = (id, data) => {
 
 const deleteCase = (id) => {
   return db.query('DELETE FROM cases WHERE id = ?', [id]);
-};
-
-const setCaseStatus = (id, status) => {
-  return db.query('UPDATE cases SET case_status = ? WHERE id = ?', [status, id]);
 };
 
 const getApprovedCases = () => {
