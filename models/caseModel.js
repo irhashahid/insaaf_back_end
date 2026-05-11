@@ -8,9 +8,14 @@ const getAllCases = () => {
       c.description_case,
       c.client_id,
       c.lawyer_id,
+      c.admin_id,
+      c.phone,
+      c.address,
+      c.case_start_date,
     FROM cases c
-    LEFT JOIN users   0 ON c.client_id = u.id
+    LEFT JOIN users   u ON c.client_id = u.id
     LEFT JOIN lawyers l ON c.lawyer_id = l.id
+    LEFT JOIN admins  a ON c.admin_id = a.id
   `);
 };
 
@@ -26,9 +31,9 @@ async function getLawyerById(id) {
 async function createLawyer({ name, specialization, location, experience, cases, status }, userId) {
   const db = getDB();
   const [result] = await db.execute(
-    `INSERT INTO lawyers (name, specialization, location, experience, cases, status, user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [name, specialization, location, experience, cases, status, userId]
+    `INSERT INTO lawyers (name, email, specialization, location, experience, cases, status, user_id)
+     VALUES (?, ?,?, ?, ?, ?, ?, ?, ?)`,
+    [name, email, specialization, location, experience, cases, status, userId]
   );
   return result;
 }
@@ -53,15 +58,19 @@ const createCase = (data) => {
   return db.query(
     `INSERT INTO cases 
      (description_case, client_id, lawyer_id, phone, address, case_type,
-      case_start_date, case_status, depart_concern, hearing_date, payment_status)
-     VALUES (?, ?, ?, ? ?, ?, ?, ?, ?)`,
+      case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?  ?, ?, NOW(), NOW())`,
     [description_case, client_id, lawyer_id, phone, address, case_type,
-     case_start_date, hearing_date, payment_status]
+     case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id]
   );
 };
 
 const updateCase = (id, data) => {
-  const 
+  const {
+    description_case, client_id, lawyer_id, phone,
+    address, case_type, case_start_date,
+     depart_concern, hearing_date, payment_status
+  } = data;
   return db.query(
     `UPDATE cases SET
       description_case=?, phone=?, address=?, case_type=?,
@@ -69,7 +78,7 @@ const updateCase = (id, data) => {
       hearing_date=?, payment_status=?
      WHERE id=?`,
     [description_case, phone, address, case_type,
-     case_start_date, depart_concern,
+     case_start_date, case_status, depart_concern,
      hearing_date, payment_status, id]
   );
 };
