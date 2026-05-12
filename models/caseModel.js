@@ -65,24 +65,8 @@ const createCase = (data) => {
   );
 };
 
-const updateCase = (id, data) => {
-  const {
-    description_case, client_id, lawyer_id, phone,
-    address, case_type, case_start_date,
-     depart_concern, hearing_date, payment_status
-  } = data;
-  return db.query(
-    `UPDATE cases SET
-      description_case=?, phone=?, address=?, case_type=?,
-      case_start_date=?, case_status=?, depart_concern=?,
-      hearing_date=?, payment_status=?
-     WHERE id=?`,
-    [description_case, phone, address, case_type,
-     case_start_date, case_status, depart_concern,
-     hearing_date, payment_status, id]
-  );
-};
 
+const updateCase = (id, data) => {
 const deleteCase = (id) => {
   return db.query('DELETE FROM cases WHERE id = ?', [id]);
 };
