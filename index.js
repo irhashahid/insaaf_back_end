@@ -11,6 +11,8 @@ app.use(express.json());
 
 app.use("/", authRoutes);
 app.use("/lawyers", lawyerRoutes);
+app.use("/cases", caseRoutes);
+
 
 initDB().then(() => {
   app.listen(3000, () => {

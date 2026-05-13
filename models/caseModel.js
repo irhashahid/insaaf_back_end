@@ -1,81 +1,103 @@
-const db = require('../config/db');
+const { getDB } = require("../config/db");
 
-const getAllCases = () => {
-  return db.query(`
+async function getAllCases() {
+  const db = getDB();
+  const [rows] = await db.execute(`
     SELECT 
       c.id,
-      c.case_type        AS title,
+      c.case_type,
       c.description_case,
       c.client_id,
       c.lawyer_id,
       c.admin_id,
       c.phone,
       c.address,
+      c.case_status,
       c.case_start_date,
+      c.depart_concern,
+      c.hearing_date,
+      c.payment_status
     FROM cases c
     LEFT JOIN users   u ON c.client_id = u.id
     LEFT JOIN lawyers l ON c.lawyer_id = l.id
-    LEFT JOIN admins  a ON c.admin_id = a.id
   `);
-};
-
-const getCaseById = (id) => {
-  return db.query('SELECT * FROM cases WHERE id = ?', [id]);
-};
-async function getLawyerById(id) {
-  const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM lawyers WHERE id = ?", [id]);
   return rows;
 }
 
-async function createLawyer({ name, specialization, location, experience, cases, status }, userId) {
+async function getCaseById(id) {
   const db = getDB();
-  const [result] = await db.execute(
-    `INSERT INTO lawyers (name, email, specialization, location, experience, cases, status, user_id)
-     VALUES (?, ?,?, ?, ?, ?, ?, ?, ?)`,
-    [name, email, specialization, location, experience, cases, status, userId]
-  );
-  return result;
+  const [rows] = await db.execute("SELECT * FROM cases WHERE id = ?", [id]);
+  return rows;
 }
 
-async function updateLawyer({ name, email, password, specialization, location, experience, cases, status }, id, userId) {
+async function createCase({ 
+  description_case, client_id, lawyer_id, phone,
+  address, case_type, case_start_date, case_status,
+  depart_concern, hearing_date, payment_status 
+}, adminId) {
   const db = getDB();
   const [result] = await db.execute(
-    `UPDATE lawyers 
-     SET name=?, email=?, password=?, specialization=?, location=?, experience=?, cases=?, status=?
-     WHERE id=? AND user_id=?`,
-    [name, email, password, specialization, location, experience, cases, status, id, userId]
-  );
-  return result;
-}
-
-const createCase = (data) => {
-  const {
-    description_case, client_id, lawyer_id, phone,
-    address, case_type, case_start_date,
-     depart_concern, hearing_date, payment_status
-  } = data;
-  return db.query(
     `INSERT INTO cases 
      (description_case, client_id, lawyer_id, phone, address, case_type,
-      case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?  ?, ?, NOW(), NOW())`,
+      case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [description_case, client_id, lawyer_id, phone, address, case_type,
-     case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id]
+     case_start_date, case_status, depart_concern, hearing_date, payment_status, adminId]
   );
-};
+  return result;
+}
 
+async function updateCase({ 
+  description_case, phone, address, case_type,
+  case_start_date, case_status, depart_concern,
+  hearing_date, payment_status 
+}, id, adminId) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE cases SET
+      description_case=?, phone=?, address=?, case_type=?,
+      case_start_date=?, case_status=?, depart_concern=?,
+      hearing_date=?, payment_status=?
+     WHERE id=? AND admin_id=?`,
+    [description_case, phone, address, case_type,
+     case_start_date, case_status, depart_concern,
+     hearing_date, payment_status, id, adminId]
+  );
+  return result;
+}
 
-const updateCase = (id, data) => {
-const deleteCase = (id) => {
-  return db.query('DELETE FROM cases WHERE id = ?', [id]);
-};
+async function deleteCase(id, adminId) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "DELETE FROM cases WHERE id=? AND admin_id=?",
+    [id, adminId]
+  );
+  return result;
+}
 
-const getApprovedCases = () => {
-  return db.query("SELECT * FROM cases WHERE case_status = 'approved'");
-};
+async function setCaseStatus(id, status) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE cases SET case_status = ? WHERE id = ?",
+    [status, id]
+  );
+  return result;
+}
+
+async function getApprovedCases() {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM cases WHERE case_status = 'approved'"
+  );
+  return rows;
+}
 
 module.exports = {
-  getAllCases, getCaseById, createCase,
-  updateCase, deleteCase, caseStatus, ApprovedCases
+  getAllCases,
+  getCaseById,
+  createCase,
+  updateCase,
+  deleteCase,
+  setCaseStatus,
+  getApprovedCases,
 };
