@@ -4,6 +4,7 @@ const { initDB } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const lawyerRoutes = require("./routes/lawyerRoutes");
 const caseRoutes = require("./routes/caseRoutes");
+const appointRoutes = require("./routes/appointRoutes");
 
 const app = express();
 app.use(cors());
@@ -12,7 +13,7 @@ app.use(express.json());
 app.use("/", authRoutes);
 app.use("/lawyers", lawyerRoutes);
 app.use("/cases", caseRoutes);
-
+app.use("/appointments", appointRoutes);
 
 initDB().then(() => {
   app.listen(3000, () => {
