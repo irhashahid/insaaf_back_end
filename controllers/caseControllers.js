@@ -59,12 +59,42 @@ async function remove(req, res) {
 
 async function updateStatus(req, res) {
   try {
-    const result = await setCaseStatus(req.params.id, req.params.status);
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Case not found" });
-    res.json({ message: "Status updated successfully" });
+
+    const allowed = [
+      "pending",
+      "approved",
+      "rejected",
+      "hearing",
+      "closed"
+    ];
+
+    const status = req.params.status.toLowerCase();
+
+    if (!allowed.includes(status)) {
+      return res.status(400).json({
+        error: "Invalid status"
+      });
+    }
+
+    const result = await setCaseStatus(
+      req.params.id,
+      status
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        error: "Case not found"
+      });
+    }
+
+    res.json({
+      message: "Status updated successfully"
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message
+    });
   }
 }
 

@@ -6,12 +6,12 @@ const {
 } = require("../controllers/caseControllers");
 
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
-router.get("/approved", approved);
-router.get("/", index);
-router.get("/:id", show);
-router.post("/", authMiddleware, create);
+router.get("/approved", approved); //get krne approved cases
+router.get("/", index); // is sey sb case ayeingy 
+router.get("/:id", show); // bs single case ayeeiga
+router.post("/", authMiddleware, create); 
 router.put("/:id", authMiddleware, update);
 router.delete("/:id", authMiddleware, remove);
-router.patch("/:id/:status", updateStatus);
+router.patch("/:id/status/:status", updateStatus);
 
 module.exports = router;
