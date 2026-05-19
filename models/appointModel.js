@@ -78,12 +78,12 @@ async function deleteAppointment(id, clientId) {
   return result;
 }
 
-// matches: status ENUM('pending','accepted','rejected')
-async function setAppointmentStatus(id, status) {
+// matches: status ENUM('pending','accepted','rejected') nd money amnt
+async function setAppointmentStatus(id, amount, status) {
   const db = getDB();
   const [result] = await db.execute(
-    "UPDATE appointments SET status=? WHERE id=?",
-    [status, id]
+    "UPDATE appointments SET status=?, amount=? WHERE id=?",
+    [status, amount, id]
   );
   return result;
 }
