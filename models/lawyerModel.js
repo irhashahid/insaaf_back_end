@@ -12,32 +12,32 @@ async function getLawyerById(id) {
   return rows;
 }
 
-async function createLawyer({ name, specialization, location, experience, cases, status }, userId) {
+async function createLawyer({ name, email, password, specialization, location, experience, cases, status, role}) {
   const db = getDB();
   const [result] = await db.execute(
-    `INSERT INTO lawyers (name, specialization, location, experience, cases, status, user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [name, specialization, location, experience, cases, status, userId]
+    `INSERT INTO lawyers (name, email, password, specialization, location, experience, cases, status, role)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'lawyer')`,
+    [name, email, password, specialization, location, experience, cases, status, role]
   );
   return result;
 }
 
-async function updateLawyer({ name, email, password, specialization, location, experience, cases, status }, id, userId) {
+async function updateLawyer({ name, email, password, specialization, location, experience, cases, status, role }, id) {
   const db = getDB();
   const [result] = await db.execute(
     `UPDATE lawyers 
-     SET name=?, email=?, password=?, specialization=?, location=?, experience=?, cases=?, status=?
-     WHERE id=? AND user_id=?`,
-    [name, email, password, specialization, location, experience, cases, status, id, userId]
+     SET name=?, email=?, password=?, specialization=?, location=?, experience=?, cases=?, status=1, role=lawyer
+     WHERE id=? `,
+    [name, email, password, specialization, location, experience, cases, status, role, id]
   );
   return result;
 }
 
-async function deleteLawyer(id, userId) {
+async function deleteLawyer(id) {
   const db = getDB();
   const [result] = await db.execute(
-    "DELETE FROM lawyers WHERE id=? AND user_id=?",
-    [id, userId]
+    "DELETE FROM lawyers WHERE id=?",
+    [id]
   );
   return result;
 }
