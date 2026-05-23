@@ -8,7 +8,7 @@ async function getAllLawyers() {
 
 async function getLawyerById(id) {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM lawyers WHERE id = ?", [id]);
+  const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
   return rows;
 }
 
