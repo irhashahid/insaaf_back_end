@@ -7,7 +7,6 @@ async function getAllCases() {
     SELECT 
       id,
       case_type,
-      law_type,
       name,
       description_case,
       client_id,
@@ -36,34 +35,34 @@ async function getCaseById(id) {
 
 async function createCase({ 
   description_case, client_id, lawyer_id, phone,
-  address, case_type, law_type, name, case_start_date, case_status,
+  address, case_type, name, case_start_date, case_status,
   depart_concern, hearing_date, payment_status 
 }, adminId) {
   const db = getDB();
   const [result] = await db.execute(
     `INSERT INTO cases 
-     (description_case, client_id, lawyer_id, phone, address, case_type, law_type, name,
+     (description_case, client_id, lawyer_id, phone, address, case_type, name,
     case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [description_case, client_id, lawyer_id, phone, address, case_type, law_type, name, 
+    [description_case, client_id, lawyer_id, phone, address, case_type, name, 
      case_start_date, case_status, depart_concern, hearing_date, payment_status, adminId]
   );
   return result;
 }
 
 async function updateCase({ 
-  description_case, phone, address, case_type, law_type, name,
+  description_case, phone, address, case_type, name,
   case_start_date, case_status, depart_concern,
   hearing_date, payment_status 
 }, id, adminId) {
   const db = getDB();
   const [result] = await db.execute(
     `UPDATE cases SET
-      description_case=?, phone=?, address=?, case_type=?, law_type=?, name=?,
+      description_case=?, phone=?, address=?, case_type=?, name=?,
       case_start_date=?, case_status=?, depart_concern=?,
       hearing_date=?, payment_status=?
      WHERE id=? AND admin_id=?`,
-    [description_case, phone, address, case_type, law_type, name,
+    [description_case, phone, address, case_type, name,
      case_start_date, case_status, depart_concern,
      hearing_date, payment_status, id, adminId]
   );
