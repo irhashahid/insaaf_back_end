@@ -58,13 +58,24 @@ async function byClient(req, res) {
 // body: { client_name, law_type, case_summary, date, time, mode }
 async function create(req, res) {
   try {
-    const { client_name, law_type, case_summary, date, time, mode } = req.body;
+    const {
+  lawyer_id,
+  law_type,
+  case_type,
+  short_description,
+  slot_start_time,
+  slot_end_time,
+  appointment_mode,
+  payment_mode,
+  payment_amount,
+  payment_receipt
+} = req.body;
 
-    if (!client_name || !law_type || !date || !time || !mode)
-      return res.status(400).json({ error: "client_name, law_type, date, time, mode are required" });
+    if (!lawyer_id || !law_type || !case_type || !short_description || !slot_start_time || !slot_end_time || !appointment_mode || !payment_mode || !payment_amount || !payment_receipt)
+      return res.status(400).json({ error: "All fields are required" });
 
     const result = await createAppointment(
-      { client_name, law_type, case_summary, date, time, mode },
+      { lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt },
       req.user.id   // comes from JWT token
     );
     res.status(201).json({ message: "Appointment created", id: result.insertId });
@@ -74,12 +85,22 @@ async function create(req, res) {
 }
 
 // PUT /appointments/:id
-// body: { client_name, law_type, case_summary, date, time, mode }
 async function update(req, res) {
   try {
-    const { client_name, law_type, case_summary, date, time, mode } = req.body;
+    const {
+  lawyer_id,
+  law_type,
+  case_type,
+  short_description,
+  slot_start_time,
+  slot_end_time,
+  appointment_mode,
+  payment_mode,
+  payment_amount,
+  payment_receipt
+} = req.body;
     const result = await updateAppointment(
-      { client_name, law_type, case_summary, date, time, mode },
+      { lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt },
       req.params.id,
       req.user.id   // only update your own appointment
     );
@@ -109,11 +130,28 @@ async function remove(req, res) {
 async function updateStatus(req, res) {
   try {
     const { id, status } = req.params;
+    const { payment_amount } = req.body;
     const allowed = ["pending", "accepted", "rejected"];
-    if (!allowed.includes(status))
-      return res.status(400).json({ error: "Invalid status: pending | accepted | rejected" });
 
-    const result = await setAppointmentStatus(id, status);
+if (!allowed.includes(status.toLowerCase()))
+  return res.status(400).json({
+    error: "Invalid status: pending | accepted | rejected"
+  });
+
+if (
+  status.toLowerCase() === "accepted" &&
+  !payment_amount
+) {
+  return res.status(400).json({
+    error: "payment_amount required when accepting appointment"
+  });
+}
+
+const result = await setAppointmentStatus(
+  id,
+  payment_amount,
+  status.toLowerCase()
+);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found" });
 

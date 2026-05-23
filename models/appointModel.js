@@ -37,33 +37,53 @@ async function getAppointmentsByClient(clientId) {
   return rows;
 }
 
-// matches: client_id, law_type, case_summary, date, time, mode, status
+// matches: 
 async function createAppointment(
-  { case_type, case_summary, date, time, mode },
+  { lawyer_id,
+    law_type,
+    case_type,
+    short_description,
+    slot_start_time,
+    slot_end_time,
+    appointment_mode,
+    payment_mode,
+    payment_amount,
+    payment_receipt
+  },
   clientId
 ) {
   const db = getDB();
   const [result] = await db.execute(
     `INSERT INTO appointments 
-     (client_id, law_type, case_summary, date, time, mode, status)
-     VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-    [clientId, law_type, case_summary, date, time, mode]
+     (client_id, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    [clientId, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt]
   );
   return result;
 }
 
 // matches: all updatable columns (not id, client_id, created_at)
 async function updateAppointment(
-  { client_name, law_type, case_summary, date, time, mode },
+  { lawyer_id,
+  law_type,
+  case_type,
+  short_description,
+  slot_start_time,
+  slot_end_time,
+  appointment_mode,
+  payment_mode,
+  payment_amount,
+  payment_receipt },
   id,
   clientId
 ) {
   const db = getDB();
   const [result] = await db.execute(
     `UPDATE appointments 
-     SET client_name=?, law_type=?, case_summary=?, date=?, time=?, mode=?
+     SET
+      lawyer_id=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?, payment_mode=?, payment_amount=?, payment_receipt=?
      WHERE id=? AND client_id=?`,
-    [client_name, law_type, case_summary, date, time, mode, id, clientId]
+    [lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt, id, clientId]
   );
   return result;
 }
@@ -79,11 +99,12 @@ async function deleteAppointment(id, clientId) {
 }
 
 // matches: status ENUM('pending','accepted','rejected') nd money amnt
-async function setAppointmentStatus(id, amount, status) {
+async function setAppointmentStatus(id, payment_amount, status) {
   const db = getDB();
+
   const [result] = await db.execute(
-    "UPDATE appointments SET status=?, amount=? WHERE id=?",
-    [status, amount, id]
+    "UPDATE appointments SET status=?, payment_amount=? WHERE id=?",
+    [status, payment_amount, id]
   );
   return result;
 }
