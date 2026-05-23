@@ -37,17 +37,17 @@ async function getAppointmentsByClient(clientId) {
   return rows;
 }
 
-// matches: client_id, client_name, law_type, case_summary, date, time, mode, status
+// matches: client_id, law_type, case_summary, date, time, mode, status
 async function createAppointment(
-  { client_name, law_type, case_summary, date, time, mode },
+  { case_type, case_summary, date, time, mode },
   clientId
 ) {
   const db = getDB();
   const [result] = await db.execute(
     `INSERT INTO appointments 
-     (client_id, client_name, law_type, case_summary, date, time, mode, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
-    [clientId, client_name, law_type, case_summary, date, time, mode]
+     (client_id, law_type, case_summary, date, time, mode, status)
+     VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+    [clientId, law_type, case_summary, date, time, mode]
   );
   return result;
 }
