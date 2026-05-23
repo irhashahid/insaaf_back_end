@@ -61,19 +61,19 @@ async function updateCase({
       description_case=?, phone=?, address=?, case_type=?, name=?,
       case_start_date=?, case_status=?, depart_concern=?,
       hearing_date=?, payment_status=?
-     WHERE id=? AND admin_id=?`,
+     WHERE id=?`,
     [description_case, phone, address, case_type, name,
      case_start_date, case_status, depart_concern,
-     hearing_date, payment_status, id, adminId]
+     hearing_date, payment_status, id ]
   );
   return result;
 }
 
-async function deleteCase(id, adminId) {
+async function deleteCase(id) {
   const db = getDB();
   const [result] = await db.execute(
-    "DELETE FROM cases WHERE id=? AND admin_id=?",
-    [id, adminId]
+    "DELETE FROM cases WHERE id=?",
+    [id]
   );
   return result;
 }
