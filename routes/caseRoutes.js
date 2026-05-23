@@ -9,7 +9,7 @@ const {
 router.get("/approved", approved); //get krne approved cases
 router.get("/", index); // is sey sb case ayeingy 
 router.get("/:id", show); // bs single case ayeeiga
-router.post("/", authMiddleware, create); 
+router.post("/",authMiddleware, create); 
 router.put("/:id", authMiddleware, update);
 router.delete("/:id", authMiddleware, remove);
 router.patch("/:id/status/:status", updateStatus);

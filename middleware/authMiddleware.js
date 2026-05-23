@@ -2,14 +2,21 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = "your_secret_key";
 
 function authMiddleware(req, res, next) {
-  const token = req.headers.authorization;
+  const authHeader = req.headers.authorization;
+  console.log("Auth header:", authHeader);
 
-  if (!token) return res.status(401).json({ error: "Access denied" });
+  if (!authHeader) return res.status(401).json({ error: "Access denied" });
+
+  // Strip "Bearer " prefix if present
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : authHeader;
 
   try {
     req.user = jwt.verify(token, JWT_SECRET);
     next();
-  } catch {
+  } catch (err) {
+    console.error("JWT error:", err.message);
     return res.status(401).json({ error: "Invalid token" });
   }
 }
