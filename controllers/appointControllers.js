@@ -18,7 +18,17 @@ async function index(req, res) {
   }
 }
 
-
+// GET /appointments/:id
+async function show(req, res) {
+  try {
+    const rows = await getAppointmentById(req.params.id);
+    if (rows.length === 0)
+      return res.status(404).json({ error: "Appointment not found" });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 // GET /appointments/filter?status=pending
 // GET /appointments/filter?status=accepted
@@ -45,32 +55,92 @@ async function byClient(req, res) {
 }
 
 // POST /appointments
-// body: { client_name, law_type, case_summary, date, time, mode }
+// body: { id, law_type, case_type, time, mode, payment_mode, payment_amount, payment_receipt }
 async function create(req, res) {
   try {
-    const {
-  lawyer_id,
-  law_type,
-  case_type,
-  short_description,
-  slot_start_time,
-  slot_end_time,
-  appointment_mode,
-  payment_mode,
-  payment_amount,
-  payment_receipt
-} = req.body;
 
-    if (!lawyer_id || !law_type || !case_type || !short_description || !slot_start_time || !slot_end_time || !appointment_mode || !payment_mode || !payment_amount || !payment_receipt)
-      return res.status(400).json({ error: "All fields are required" });
+    const {
+      lawyer_id,
+      law_type,
+      case_type,
+      short_description,
+      slot_start_time,
+      slot_end_time,
+      appointment_mode,
+      payment_mode,
+      payment_amount,
+      payment_receipt
+    } = req.body;
+
+    // required fields
+    if (
+      !lawyer_id ||
+      !law_type ||
+      !case_type ||
+      !short_description ||
+      !slot_start_time ||
+      !slot_end_time ||
+      !appointment_mode ||
+      !payment_mode
+    ) {
+      return res.status(400).json({
+        error: "Required fields missing"
+      });
+    }
+
+    // appointment mode validation
+    const modes = ["online", "physical"];
+
+    if (!modes.includes(appointment_mode.toLowerCase())) {
+      return res.status(400).json({
+        error: "Invalid appointment mode"
+      });
+    }
+
+    // payment mode validation
+    const paymentModes = ["stripe", "manual"];
+
+    if (!paymentModes.includes(payment_mode.toLowerCase())) {
+      return res.status(400).json({
+        error: "Invalid payment mode"
+      });
+    }
+
+    // stripe validation
+    if (
+      payment_mode.toLowerCase() === "stripe" &&
+      (!payment_amount || !payment_receipt)
+    ) {
+      return res.status(400).json({
+        error: "payment_amount and payment_receipt required for Stripe payments"
+      });
+    }
 
     const result = await createAppointment(
-      { lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt },
-      req.user.id   // comes from JWT token
+      {
+        lawyer_id,
+        law_type,
+        case_type,
+        short_description,
+        slot_start_time,
+        slot_end_time,
+        appointment_mode,
+        payment_mode,
+        payment_amount,
+        payment_receipt
+      },
+      req.user.id
     );
-    res.status(201).json({ message: "Appointment created", id: result.insertId });
+
+    res.status(201).json({
+      message: "Appointment created",
+      id: result.insertId
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message
+    });
   }
 }
 

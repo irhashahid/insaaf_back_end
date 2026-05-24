@@ -17,7 +17,7 @@ async function getAppointmentById(id) {
   return rows;
 }
 
-// matches: status ENUM('pending','accepted','rejected')
+// matches: status ENUM('pending','accepted','rejected')'pending','accepted','rejected'
 async function getAppointmentsByStatus(status) {
   const db = getDB();
   const [rows] = await db.execute(

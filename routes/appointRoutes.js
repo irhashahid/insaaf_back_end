@@ -24,6 +24,6 @@ router.put("/:id", authMiddleware, update);    // PUT /appointments/1
 router.delete("/:id", authMiddleware, remove); // DELETE /appointments/1
 
 // ── status control (Figma buttons) ───────────────────
-router.patch("/:id/:status", authMiddleware, updateStatus); // PATCH /appointments/1/accepted
+router.patch("/:id/status/:status", authMiddleware, updateStatus); // PATCH /appointments/1/accepted
 
 module.exports = router;

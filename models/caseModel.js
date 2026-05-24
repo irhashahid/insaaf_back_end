@@ -86,7 +86,7 @@ async function setCaseStatus(id, status) {
   );
   return result;
 }
-
+// matches: case_status ENUM('pending','approved','rejected','hearing','closed')
 async function getApprovedCases() {
   const db = getDB();
   const [rows] = await db.execute(
