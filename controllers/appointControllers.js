@@ -18,17 +18,7 @@ async function index(req, res) {
   }
 }
 
-// GET /appointments/:id
-async function show(req, res) {
-  try {
-    const rows = await getAppointmentById(req.params.id);
-    if (rows.length === 0)
-      return res.status(404).json({ error: "Appointment not found" });
-    res.json(rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
+
 
 // GET /appointments/filter?status=pending
 // GET /appointments/filter?status=accepted
