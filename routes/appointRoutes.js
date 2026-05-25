@@ -18,7 +18,7 @@ router.get("/client/:clientId", byClient);     // GET /appointments/client/3
 
 // ── general CRUD ─────────────────────────────────────
 router.get("/", index);                        // GET /appointments
-router.get("/:id", show);                      // GET /appointments/1
+router.get("/:id", show);                      // GET /appointments/1 
 router.post("/", authMiddleware, create);      // POST /appointments
 router.put("/:id", authMiddleware, update);    // PUT /appointments/1
 router.delete("/:id", authMiddleware, remove); // DELETE /appointments/1
