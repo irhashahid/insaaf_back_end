@@ -9,9 +9,9 @@ const {
 router.get("/approved", approved); //get krne approved cases
 router.get("/", index); // is sey sb case ayeingy 
 router.get("/:id", show); // bs single case ayeeiga
-router.post("/",authMiddleware, create); 
-router.put("/:id", authMiddleware, update);
-router.delete("/:id", authMiddleware, remove);
-router.patch("/:id/status/:status", updateStatus);
+router.post("/",authMiddleware, create); // create new case
+router.put("/:id", authMiddleware, update); //edit case by id
+router.delete("/:id", authMiddleware, remove); //del case by id
+router.patch("/:id/status/:status", updateStatus); //update Case status (pending, approved, rejected)
 
 module.exports = router;
