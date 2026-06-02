@@ -8,14 +8,7 @@ async function getAllAppointments() {
 }
 
 // matches: id column
-async function getAppointmentById(id) {
-  const db = getDB();
-  const [rows] = await db.execute(
-    "SELECT * FROM appointments WHERE id = ?",
-    [id]
-  );
-  return rows;
-}
+
 
 // matches: status ENUM('pending','accepted','rejected')'pending','accepted','rejected'
 async function getAppointmentsByStatus(status) {
