@@ -21,7 +21,7 @@ router.get("/", index);                        // GET /appointments
 router.get("/:id", show);                      // GET /appointments/1 
 router.post("/", authMiddleware, create);      // POST /appointments
 router.put("/:id", authMiddleware, update);    // PUT /appointments/1
-router.delete("/:id", authMiddleware, remove); // DELETE /appointments/1
+router.delete("/:id", authMiddleware, remove); // DELETE /appointments/4
 
 // ── status control (Figma buttons) ───────────────────
 router.patch("/:id/status/:status", authMiddleware, updateStatus); // PATCH /appointments/1/accepted

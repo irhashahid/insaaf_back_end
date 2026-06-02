@@ -147,6 +147,10 @@ async function create(req, res) {
 // PUT /appointments/:id
 async function update(req, res) {
   try {
+    console.log("params id:", req.params.id);
+    console.log("user:", req.user);
+    console.log("body:", req.body);
+
     const {
   lawyer_id,
   law_type,
