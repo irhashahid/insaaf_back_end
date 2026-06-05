@@ -37,7 +37,29 @@ async function getAppointmentsByClient(clientId) {
   return rows;
 }
 
-
+// matches: 
+async function createAppointment(
+  { lawyer_id,
+    law_type,
+    case_type,
+    short_description,
+    slot_start_time,
+    slot_end_time,
+    appointment_mode,
+    payment_mode,
+    payment_amount,
+    payment_receipt
+  },
+  clientId
+) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `INSERT INTO appointments 
+     (client_id, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    [clientId, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt]
+  );
+  return result;
 }
 
 // matches: all updatable columns (not id, client_id, created_at)
