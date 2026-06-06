@@ -59,7 +59,7 @@ async function remove(req, res) {
 
 async function updateStatus(req, res) {
   try {
-    const result = await setLawyerStatus(req.params.id, req.params.status);
+     result = await setLawyerStatus(req.params.id, req.params.status);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Lawyer not found" });
     res.json({ message: "Status updated successfully" });

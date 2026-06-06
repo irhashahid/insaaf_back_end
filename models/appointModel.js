@@ -55,9 +55,9 @@ async function createAppointment(
   const db = getDB();
   const [result] = await db.execute(
     `INSERT INTO appointments 
-     (client_id, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt, status)
+     (client_id, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-    [clientId, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt]
+    [clientId, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode]
   );
   return result;
 }
@@ -70,10 +70,8 @@ async function updateAppointment(
   short_description,
   slot_start_time,
   slot_end_time,
-  appointment_mode,
-  payment_mode,
-  payment_amount,
-  payment_receipt },
+  appointment_mode
+   },
   id,
   clientId
 ) {
@@ -83,7 +81,7 @@ async function updateAppointment(
      SET
       lawyer_id=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?, payment_mode=?, payment_amount=?, payment_receipt=?
      WHERE id=? AND client_id=?`,
-    [lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt, id, clientId]
+    [lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  id, clientId]
   );
   return result;
 }
