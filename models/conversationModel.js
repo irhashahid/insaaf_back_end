@@ -40,22 +40,26 @@ async function getConversationsByLawyer(lawyerId) {
 // CREATE conversation
 async function createConversation(clientId, lawyerId) {
   const db = getDB();
+
+  const [existing] = await db.execute(
+    "SELECT * FROM conversation WHERE client_id=? AND lawyer_id=?",
+    [clientId, lawyerId]
+  );
+
+  if (existing.length > 0) {
+    return {
+      insertId: existing[0].id
+    };
+  }
+
   const [result] = await db.execute(
     "INSERT INTO conversation (client_id, lawyer_id) VALUES (?, ?)",
     [clientId, lawyerId]
   );
+
   return result;
 }
 
-// DELETE conversation
-async function deleteConversation(id) {
-  const db = getDB();
-  const [result] = await db.execute(
-    "DELETE FROM conversation WHERE id = ?",
-    [id]
-  );
-  return result;
-}
 
 module.exports = {
   getAllConversations,
@@ -63,5 +67,4 @@ module.exports = {
   getConversationsByClient,
   getConversationsByLawyer,
   createConversation,
-  deleteConversation,
 };

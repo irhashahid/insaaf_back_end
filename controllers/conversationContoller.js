@@ -4,7 +4,7 @@ const {
   getConversationsByClient,
   getConversationsByLawyer,
   createConversation,
-  deleteConversation,
+  
 } = require("../models/conversationModel");
 
 // GET /conversations
@@ -61,16 +61,5 @@ async function create(req, res) {
   }
 }
 
-// DELETE /conversations/:id
-async function remove(req, res) {
-  try {
-    const result = await deleteConversation(req.params.id);
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Conversation not found" });
-    res.json({ message: "Conversation deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
 
-module.exports = { index, show, byClient, byLawyer, create, remove };
+module.exports = { index, show, byClient, byLawyer, create };
