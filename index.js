@@ -5,6 +5,7 @@ const authRoutes = require("./routes/authRoutes");
 const lawyerRoutes = require("./routes/lawyerRoutes");
 const caseRoutes = require("./routes/caseRoutes");
 const appointRoutes = require("./routes/appointRoutes");
+const conversationRoutes = require("./routes/conversationRoutes");
 
 const app = express();
 app.use(cors());
@@ -14,6 +15,7 @@ app.use("/", authRoutes);
 app.use("/lawyers", lawyerRoutes);
 app.use("/cases", caseRoutes);
 app.use("/appointments", appointRoutes);
+app.use("/conversations", conversationRoutes);
 
 initDB().then(() => {
   app.listen(3000, () => {
