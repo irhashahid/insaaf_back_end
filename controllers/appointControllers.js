@@ -80,39 +80,10 @@ async function create(req, res) {
       !short_description ||
       !slot_start_time ||
       !slot_end_time ||
-      !appointment_mode ||
-      !payment_mode
+      !appointment_mode
     ) {
       return res.status(400).json({
         error: "Required fields missing"
-      });
-    }
-
-    // appointment mode validation
-    const modes = ["online", "physical"];
-
-    if (!modes.includes(appointment_mode.toLowerCase())) {
-      return res.status(400).json({
-        error: "Invalid appointment mode"
-      });
-    }
-
-    // payment mode validation
-    const paymentModes = ["stripe", "manual"];
-
-    if (!paymentModes.includes(payment_mode.toLowerCase())) {
-      return res.status(400).json({
-        error: "Invalid payment mode"
-      });
-    }
-
-    // stripe validation
-    if (
-      payment_mode.toLowerCase() === "stripe" &&
-      (!payment_amount || !payment_receipt)
-    ) {
-      return res.status(400).json({
-        error: "payment_amount and payment_receipt required for Stripe payments"
       });
     }
 
@@ -125,9 +96,6 @@ async function create(req, res) {
         slot_start_time,
         slot_end_time,
         appointment_mode,
-        payment_mode,
-        payment_amount,
-        payment_receipt
       },
       req.user.id
     );
