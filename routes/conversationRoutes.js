@@ -10,6 +10,6 @@ router.get("/client/:clientId", authMiddleware, byClient);   // GET /conversatio
 router.get("/lawyer/:lawyerId", authMiddleware, byLawyer);   // GET /conversations/lawyer/5
 router.get("/", authMiddleware, index);                      // GET /conversations
 router.get("/:id", authMiddleware, show);                    // GET /conversations/1
-router.post("/", authMiddleware, create);                    // POST /conversations              // DELETE /conversations/1
+router.post("/", authMiddleware, create);                    // POST /conversations
 
 module.exports = router;
