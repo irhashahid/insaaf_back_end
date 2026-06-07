@@ -126,13 +126,10 @@ async function update(req, res) {
   short_description,
   slot_start_time,
   slot_end_time,
-  appointment_mode,
-  payment_mode,
-  payment_amount,
-  payment_receipt
+  appointment_mode
 } = req.body;
     const result = await updateAppointment(
-      { lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, payment_mode, payment_amount, payment_receipt },
+      { lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode },
       req.params.id,
       req.user.id   // only update your own appointment
     );
