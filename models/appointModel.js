@@ -51,10 +51,30 @@ async function createAppointment(
 ) {
   const db = getDB();
   const [result] = await db.execute(
-    `INSERT INTO appointments 
-     (client_id, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-    [clientId, lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode]
+    `INSERT INTO appointments
+     (
+       client_id,
+       lawyer_id,
+       law_type,
+       case_type,
+       short_description,
+       slot_start_time,
+       slot_end_time,
+       appointment_mode,
+       status
+     )
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      clientId,
+      lawyer_id,
+      law_type,
+      case_type,
+      short_description,
+      slot_start_time,
+      slot_end_time,
+      appointment_mode,
+      'pending'
+    ]
   );
   return result;
 }
