@@ -45,10 +45,7 @@ async function createAppointment(
     short_description,
     slot_start_time,
     slot_end_time,
-    appointment_mode,
-    payment_mode,
-    payment_amount,
-    payment_receipt
+    appointment_mode
   },
   clientId
 ) {
@@ -79,7 +76,7 @@ async function updateAppointment(
   const [result] = await db.execute(
     `UPDATE appointments 
      SET
-      lawyer_id=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?, payment_mode=?, payment_amount=?, payment_receipt=?
+      lawyer_id=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?
      WHERE id=? AND client_id=?`,
     [lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  id, clientId]
   );
