@@ -2,8 +2,6 @@ const {
   getMessagesByConversation,
   getMessageById,
   createMessage,
-  updateMessage,
-  deleteMessage,
   markAsRead,
 } = require("../models/messageModel");
 
@@ -49,34 +47,6 @@ async function create(req, res) {
   }
 }
 
-// PUT /messages/:id
-// body: { message }
-async function update(req, res) {
-  try {
-    const { message } = req.body;
-    if (!message)
-      return res.status(400).json({ error: "message text is required" });
-
-    const result = await updateMessage(req.params.id, message, req.user.id);
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Not found or not yours" });
-    res.json({ message: "Message updated" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// DELETE /messages/:id
-async function remove(req, res) {
-  try {
-    const result = await deleteMessage(req.params.id, req.user.id);
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Not found or not yours" });
-    res.json({ message: "Message deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
 
 // PATCH /messages/read/:conversationId
 async function markRead(req, res) {
@@ -88,4 +58,4 @@ async function markRead(req, res) {
   }
 }
 
-module.exports = { byConversation, show, create, update, remove, markRead };
+module.exports = { byConversation, show, create, markRead };

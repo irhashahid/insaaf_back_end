@@ -17,7 +17,7 @@ app.use("/", authRoutes);
 app.use("/lawyers", lawyerRoutes);
 app.use("/cases", caseRoutes);
 app.use("/appointments", appointRoutes);
-app.use("/conversation", conversationRoutes);
+app.use("/conversations", conversationRoutes);
 app.use("/messages", messageRoutes);
 
 initDB().then(() => {

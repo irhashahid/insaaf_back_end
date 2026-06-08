@@ -32,26 +32,6 @@ async function createMessage({ conversation_id, sender_id, receiver_id, message 
   return result;
 }
 
-// UPDATE message (edit text)
-async function updateMessage(id, message, senderId) {
-  const db = getDB();
-  const [result] = await db.execute(
-    "UPDATE messages SET message = ? WHERE id = ? AND sender_id = ?",
-    [message, id, senderId]
-  );
-  return result;
-}
-
-// DELETE message
-async function deleteMessage(id, senderId) {
-  const db = getDB();
-  const [result] = await db.execute(
-    "DELETE FROM messages WHERE id = ? AND sender_id = ?",
-    [id, senderId]
-  );
-  return result;
-}
-
 // MARK messages as read
 // matches: is_read column
 async function markAsRead(conversationId, receiverId) {
@@ -67,7 +47,5 @@ module.exports = {
   getMessagesByConversation,
   getMessageById,
   createMessage,
-  updateMessage,
-  deleteMessage,
   markAsRead,
 };
