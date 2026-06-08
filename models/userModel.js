@@ -14,5 +14,18 @@ async function createUser(email, hash) {
   );
   return result;
 }
+//gte all lawyers and clients
+async function getAllLawyers() {
+  const db = getDB();
+  const [rows] = await db.execute("SELECT id, name, email, specialization, location, experience, cases, status FROM users WHERE role = 'lawyer'"
+  );
+  return rows;
+}
 
-module.exports = { findByEmail, createUser };
+async function getAllClients() {
+  const db = getDB();
+  const [rows] = await db.execute("SELECT id, name, email, location, status FROM users WHERE role = 'client'");
+  return rows;
+}
+
+module.exports = { findByEmail, createUser, getAllLawyers, getAllClients };

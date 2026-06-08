@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { findByEmail, createUser } = require("../models/userModel");
+const { findByEmail, createUser, getAllLawyers, getAllClients } = require("../models/userModel"); // 👈 updated
 
 const JWT_SECRET = "your_secret_key";
 
@@ -47,4 +47,23 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login };
+// 👇 ADD THESE TWO
+async function getLawyers(req, res) {
+  try {
+    const lawyers = await getAllLawyers();
+    res.status(200).json({ success: true, count: lawyers.length, data: lawyers });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function getClients(req, res) {
+  try {
+    const clients = await getAllClients();
+    res.status(200).json({ success: true, count: clients.length, data: clients });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { register, login, getLawyers, getClients }; // 👈 updated

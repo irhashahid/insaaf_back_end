@@ -1,12 +1,22 @@
 const { getDB } = require("../config/db");
 
-// matches: SELECT all columns from appointments
 async function getAllAppointments() {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM appointments");
+  const [rows] = await db.execute(`
+    SELECT 
+      a.*,
+      client.id AS client_id,
+      client.name AS client_name,
+      client.email AS client_email,
+      lawyer.id AS lawyer_id,
+      lawyer.name AS lawyer_name,
+      lawyer.email AS lawyer_email
+    FROM appointments a
+    JOIN users client ON a.client_id = client.id
+    JOIN users lawyer ON a.lawyer_id = lawyer.id
+  `);
   return rows;
 }
-
 // matches: id column
 async function getAppointmentById(id) {
   const db = getDB();
