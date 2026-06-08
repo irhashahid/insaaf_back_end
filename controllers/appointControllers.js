@@ -30,9 +30,7 @@ async function show(req, res) {
   }
 }
 
-// GET /appointments/filter?status=pending
-// GET /appointments/filter?status=accepted
-// GET /appointments/filter?status=rejected
+// GET /appointments/filter?status=pending,accepted,rejected
 async function byStatus(req, res) {
   try {
     const { status } = req.query;
@@ -55,7 +53,6 @@ async function byClient(req, res) {
 }
 
 // POST /appointments
-// body: { id, law_type, case_type, time, mode, payment_mode, payment_amount, payment_receipt }
 async function create(req, res) {
   try {
 

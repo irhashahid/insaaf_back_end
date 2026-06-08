@@ -47,7 +47,7 @@ async function login(req, res) {
   }
 }
 
-// 👇 ADD THESE TWO
+// get lawyrs and cliemts
 async function getLawyers(req, res) {
   try {
     const lawyers = await getAllLawyers();
@@ -66,4 +66,4 @@ async function getClients(req, res) {
   }
 }
 
-module.exports = { register, login, getLawyers, getClients }; // 👈 updated
+module.exports = { register, login, getLawyers, getClients }; 

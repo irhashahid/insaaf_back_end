@@ -47,7 +47,6 @@ async function byLawyer(req, res) {
 }
 
 // POST /conversations
-// body: { lawyer_id }
 async function create(req, res) {
   try {
     const { lawyer_id } = req.body;

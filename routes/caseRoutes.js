@@ -8,8 +8,8 @@ const { getLawyers, getClients } = require("../controllers/authControllers"); //
 
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
 router.get("/approved", approved); //get krne approved cases
-router.get("/lawyers", getLawyers);      // 👈 get all lawyers
-router.get("/clients", getClients);      // 👈 get all clients
+router.get("/lawyers", getLawyers);      //  get all lawyers
+router.get("/clients", getClients);      // get all clients
 router.get("/", index); // is sey sb case ayeingy 
 router.get("/:id", show); // bs single case ayeeiga
 router.post("/",authMiddleware, create); // create new case

@@ -1,6 +1,6 @@
 const { getDB } = require("../config/db");
 
-// GET all messages in a conversation
+// GET all msgss in convo
 async function getMessagesByConversation(conversationId) {
   const db = getDB();
   const [rows] = await db.execute(
