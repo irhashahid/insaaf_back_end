@@ -10,6 +10,8 @@ const {
   update,
   remove,
   updateStatus,
+   pay,        // ← add
+  approvePay, // ← add
 } = require("../controllers/appointControllers");
 
 // ── specific routes BEFORE /:id ──
@@ -25,5 +27,9 @@ router.delete("/:id", authMiddleware, remove); // DELETE /appointments/4
 
 // ── status control (Figma buttons) ────
 router.patch("/:id/status/:status", authMiddleware, updateStatus); // PATCH /appointments/1/accepted
+
+// ── payment routes ────
+router.patch("/:id/pay", authMiddleware, pay);        // PATCH /appointments/1/pay......... client submits pymnt
+router.patch("/:id/approve-payment", authMiddleware, approvePay); // PATCH /appointments/1/approve-payment.......lawyr approves pymnt
 
 module.exports = router;

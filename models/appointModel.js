@@ -134,6 +134,30 @@ async function setAppointmentStatus(id, payment_amount, status) {
   return result;
 }
 
+// Client submits payment — cash or online with receipt
+async function submitPayment(id, clientId, payment_mode, payment_receipt) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE appointments
+     SET payment_mode = ?, payment_receipt = ?
+     WHERE id = ? AND client_id = ?`,
+    [payment_mode, payment_receipt, id, clientId]
+  );
+  return result;
+}
+
+// Lawyer approves payment → payment_status = 1
+async function approvePayment(id, lawyerId) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE appointments
+     SET payment_status = 1
+     WHERE id = ? AND lawyer_id = ?`,
+    [id, lawyerId]
+  );
+  return result;
+}
+
 module.exports = {
   getAllAppointments,
   getAppointmentById,
@@ -143,4 +167,6 @@ module.exports = {
   updateAppointment,
   deleteAppointment,
   setAppointmentStatus,
+  submitPayment,
+  approvePayment,
 };

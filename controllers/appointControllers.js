@@ -7,6 +7,8 @@ const {
   updateAppointment,
   deleteAppointment,
   setAppointmentStatus,
+  submitPayment,    // ← add
+  approvePayment,   // ← add
 } = require("../models/appointModel");
 
 // GET /appointments
@@ -186,5 +188,92 @@ const result = await setAppointmentStatus(
     res.status(500).json({ error: err.message });
   }
 }
+// PATCH /appointments/:id/pay
+// body: { payment_mode, payment_receipt }
+// called by CLIENT after paying
+async function pay(req, res) {
+  try {
+    const { payment_mode, payment_receipt } = req.body;
 
-module.exports = { index, show, byStatus, byClient, create, update, remove, updateStatus };
+    if (!payment_mode)
+      return res.status(400).json({ error: "payment_mode required: Stripe | Manual" });
+
+    const allowed = ["Stripe", "Manual"];
+    if (!allowed.includes(payment_mode))
+      return res.status(400).json({ error: "payment_mode must be Stripe or Manual" });
+
+    const result = await submitPayment(
+      req.params.id,
+      req.user.id,
+      payment_mode,
+      payment_receipt ?? null
+    );
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Appointment not found or not yours" });
+
+    res.json({ message: "Payment submitted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// PATCH /appointments/:id/approve-payment
+// called by LAWYER after verifying payment proof
+async function approvePay(req, res) {
+  try {
+    const result = await approvePayment(req.params.id, req.user.id);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Appointment not found or not yours" });
+
+    res.json({ message: "Payment approved, appointment fully booked" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+// PATCH /appointments/:id/pay
+// body: { payment_mode, payment_receipt }
+// called by CLIENT after paying
+async function pay(req, res) {
+  try {
+    const { payment_mode, payment_receipt } = req.body;
+
+    if (!payment_mode)
+      return res.status(400).json({ error: "payment_mode required: Stripe | Manual" });
+
+    const allowed = ["Stripe", "Manual"];
+    if (!allowed.includes(payment_mode))
+      return res.status(400).json({ error: "payment_mode must be Stripe or Manual" });
+
+    const result = await submitPayment(
+      req.params.id,
+      req.user.id,
+      payment_mode,
+      payment_receipt ?? null
+    );
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Appointment not found or not yours" });
+
+    res.json({ message: "Payment submitted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// PATCH /appointments/:id/approve-payment
+// called by LAWYER after verifying payment proof
+async function approvePay(req, res) {
+  try {
+    const result = await approvePayment(req.params.id, req.user.id);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Appointment not found or not yours" });
+
+    res.json({ message: "Payment approved, appointment fully booked" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+module.exports = { index, show, byStatus, byClient, create, update, remove, updateStatus, pay, approvePay, };
