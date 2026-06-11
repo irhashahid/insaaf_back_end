@@ -33,3 +33,4 @@ router.patch("/:id/pay", authMiddleware, pay);        // PATCH /appointments/1/p
 router.patch("/:id/approve-payment", authMiddleware, approvePay); // PATCH /appointments/1/approve-payment.......lawyr approves pymnt
 
 module.exports = router;
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjEsImVtYWlsIjoic2hhaEBnbWFpbC5jb20iLCJpYXQiOjE3ODExOTczMjYsImV4cCI6MTc4MTI4MzcyNn0.Zbhmp7SV6G9cpoq0YSx2hA3uDjdz_6EsBfF7PbALK3s
