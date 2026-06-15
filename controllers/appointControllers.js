@@ -54,6 +54,14 @@ async function byClient(req, res) {
   }
 }
 
+// GET /appointments/lawyer/:lawyerId
+async function byLawyer(req, res) {
+  try {
+    res.json(await getAppointmentsByLawyer(req.params.lawyerId));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 // POST /appointments
 async function create(req, res) {
   try {

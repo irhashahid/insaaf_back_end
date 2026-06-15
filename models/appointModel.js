@@ -46,6 +46,15 @@ async function getAppointmentsByClient(clientId) {
   );
   return rows;
 }
+// matches: lawyer_id → FOREIGN KEY → users.id
+async function getAppointmentsByLawyer(LawyerId) {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM appointments WHERE lawyer_id = ?",
+    [LawyerId]
+  );
+  return rows;
+}
 
 // matches: 
 async function createAppointment(
@@ -163,6 +172,7 @@ module.exports = {
   getAppointmentById,
   getAppointmentsByStatus,
   getAppointmentsByClient,
+  getAppointmentsByLawyer,
   createAppointment,
   updateAppointment,
   deleteAppointment,
