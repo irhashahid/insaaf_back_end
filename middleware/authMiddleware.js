@@ -13,7 +13,7 @@ function authMiddleware(req, res, next) {
     : authHeader;
 
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
+    req.user = jwt.verify(token, JWT_SECRET); //will gimme user id, email, role
     next();
   } catch (err) {
     console.error("JWT error:", err.message);

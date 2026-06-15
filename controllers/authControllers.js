@@ -37,9 +37,16 @@ async function login(req, res) {
     if (!isMatch)
       return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    //role based access control - add role to JWT payload
+    const token = jwt.sign(
+  {
+    id: user.id,
+    email: user.email,
+    role: user.role
+  },
+  JWT_SECRET,
+  { expiresIn: "1d" }
+);
 
     res.json({ user, message: "Login successful", token });
   } catch (err) {

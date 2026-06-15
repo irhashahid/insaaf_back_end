@@ -3,6 +3,7 @@ const {
   getAppointmentById,
   getAppointmentsByStatus,
   getAppointmentsByClient,
+  getAppointmentsByRole,
   createAppointment,
   updateAppointment,
   deleteAppointment,
@@ -10,6 +11,8 @@ const {
   submitPayment,    // ← add
   approvePayment,   // ← add
 } = require("../models/appointModel");
+
+const { findByEmail } = require("../models/userModel"); //role based access
 
 // GET /appointments
 async function index(req, res) {
@@ -53,15 +56,29 @@ async function byClient(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-
-// GET /appointments/lawyer/:lawyerId
-async function byLawyer(req, res) {
+//role bases wrkk
+async function myAppointments(req, res) {
   try {
-    res.json(await getAppointmentsByLawyer(req.params.lawyerId));
+
+    const users = await findByEmail(req.user.email);
+
+    if (users.length === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    const user = users[0];
+
+    const appointments = await getAppointmentsByRole(
+      req.user.id,
+      user.role
+    );
+
+    res.json(appointments);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
+
 // POST /appointments
 async function create(req, res) {
   try {
@@ -284,4 +301,4 @@ async function approvePay(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-module.exports = { index, show, byStatus, byClient, create, update, remove, updateStatus, pay, approvePay, };
+module.exports = { index, show, byStatus, byClient, myAppointments, create, update, remove, updateStatus, pay, approvePay, };

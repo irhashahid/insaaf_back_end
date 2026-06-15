@@ -46,13 +46,24 @@ async function getAppointmentsByClient(clientId) {
   );
   return rows;
 }
-// matches: lawyer_id → FOREIGN KEY → users.id
-async function getAppointmentsByLawyer(LawyerId) {
+// role base wrk noww
+async function getAppointmentsByRole(userId, role) {
   const db = getDB();
-  const [rows] = await db.execute(
-    "SELECT * FROM appointments WHERE lawyer_id = ?",
-    [LawyerId]
-  );
+
+  let query = "";
+  let params = [];
+
+  if (role === "admin") {
+    query = "SELECT * FROM appointments";
+  } else if (role === "lawyer") {
+    query = "SELECT * FROM appointments WHERE lawyer_id = ?";
+    params = [userId];
+  } else {
+    query = "SELECT * FROM appointments WHERE client_id = ?";
+    params = [userId];
+  }
+
+  const [rows] = await db.execute(query, params);
   return rows;
 }
 
@@ -172,7 +183,6 @@ module.exports = {
   getAppointmentById,
   getAppointmentsByStatus,
   getAppointmentsByClient,
-  getAppointmentsByLawyer,
   createAppointment,
   updateAppointment,
   deleteAppointment,

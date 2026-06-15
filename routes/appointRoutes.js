@@ -6,6 +6,7 @@ const {
   show,
   byStatus,
   byClient,
+  myAppointments, // for role based access
   create,
   update,
   remove,
@@ -17,7 +18,8 @@ const {
 // ── specific routes BEFORE /:id ──
 router.get("/filter", byStatus);               // GET /appointments/filter?status=pending
 router.get("/client/:clientId", byClient);     // GET /appointments/client/3
-router.get("/lawyer/:lawyerId", byLawyer);     // GET /appointments/lawyer/2
+router.get("/my-appointments", authMiddleware, myAppointments); // GET /appointments/my-appointments
+
 // ── general CRUD ──
 router.get("/", index);                        // GET /appointments
 router.get("/:id", show);                      // GET /appointments/1 
