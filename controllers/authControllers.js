@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { findByEmail, createUser, getAllLawyers, getAllClients } = require("../models/userModel"); // 👈 updated
+const { findByEmail, createUser, getAllLawyers, getAllClients } = require("../models/userModel"); //  updated
 
 const JWT_SECRET = "your_secret_key";
 
@@ -36,8 +36,8 @@ async function login(req, res) {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(401).json({ error: "Invalid credentials" });
-
-    //role based access control - add role to JWT payload
+ 
+      //role based access control, from the users table (lawyer / client / admin)
     const token = jwt.sign(
   {
     id: user.id,
@@ -47,6 +47,7 @@ async function login(req, res) {
   JWT_SECRET,
   { expiresIn: "1d" }
 );
+   
 
     res.json({ user, message: "Login successful", token });
   } catch (err) {

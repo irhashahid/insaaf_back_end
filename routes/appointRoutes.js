@@ -11,14 +11,15 @@ const {
   update,
   remove,
   updateStatus,
-   pay,        // ← add
-  approvePay, // ← add
+  pay,        //  add
+  approvePay, // add
 } = require("../controllers/appointControllers");
 
 // ── specific routes BEFORE /:id ──
 router.get("/filter", byStatus);               // GET /appointments/filter?status=pending
 router.get("/client/:clientId", byClient);     // GET /appointments/client/3
-router.get("/my-appointments", authMiddleware, myAppointments); // GET /appointments/my-appointments
+router.get("/mine", authMiddleware, myAppointments); // GET /appointments/mine
+
 
 // ── general CRUD ──
 router.get("/", index);                        // GET /appointments

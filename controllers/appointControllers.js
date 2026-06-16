@@ -3,13 +3,13 @@ const {
   getAppointmentById,
   getAppointmentsByStatus,
   getAppointmentsByClient,
-  getAppointmentsByRole,
+  getAppointmentsByLawyer,   // role base lawyer
   createAppointment,
   updateAppointment,
   deleteAppointment,
   setAppointmentStatus,
-  submitPayment,    // ← add
-  approvePayment,   // ← add
+  submitPayment,    //  add
+  approvePayment,   //  add
 } = require("../models/appointModel");
 
 const { findByEmail } = require("../models/userModel"); //role based access
@@ -56,24 +56,26 @@ async function byClient(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-//role bases wrkk
+
+// GET /appointments/mine  = role-based wrk
+// client  → their own appointments (by client_id)
+// lawyer  → assigned appointments (by lawyer_id)
+// admin   → all appointments
 async function myAppointments(req, res) {
   try {
+    const { id, role } = req.user;
 
-    const users = await findByEmail(req.user.email);
+    let rows;
+    if (role === "admin") {
+      rows = await getAllAppointments();
+    } else if (role === "lawyer") {
+      rows = await getAppointmentsByLawyer(id);
+    } else {
+      // default: client
+      rows = await getAppointmentsByClient(id);
+    }
 
-    if (users.length === 0)
-      return res.status(404).json({ error: "User not found" });
-
-    const user = users[0];
-
-    const appointments = await getAppointmentsByRole(
-      req.user.id,
-      user.role
-    );
-
-    res.json(appointments);
-
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -257,48 +259,5 @@ async function approvePay(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-// PATCH /appointments/:id/pay
-// body: { payment_mode, payment_receipt }
-// called by CLIENT after paying
-async function pay(req, res) {
-  try {
-    const { payment_mode, payment_receipt } = req.body;
 
-    if (!payment_mode)
-      return res.status(400).json({ error: "payment_mode required: Stripe | Manual" });
-
-    const allowed = ["Stripe", "Manual"];
-    if (!allowed.includes(payment_mode))
-      return res.status(400).json({ error: "payment_mode must be Stripe or Manual" });
-
-    const result = await submitPayment(
-      req.params.id,
-      req.user.id,
-      payment_mode,
-      payment_receipt ?? null
-    );
-
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Appointment not found or not yours" });
-
-    res.json({ message: "Payment submitted successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-// PATCH /appointments/:id/approve-payment
-// called by LAWYER after verifying payment proof
-async function approvePay(req, res) {
-  try {
-    const result = await approvePayment(req.params.id, req.user.id);
-
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Appointment not found or not yours" });
-
-    res.json({ message: "Payment approved, appointment fully booked" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
 module.exports = { index, show, byStatus, byClient, myAppointments, create, update, remove, updateStatus, pay, approvePay, };

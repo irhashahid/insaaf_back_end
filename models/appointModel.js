@@ -46,26 +46,16 @@ async function getAppointmentsByClient(clientId) {
   );
   return rows;
 }
-// role base wrk noww
-async function getAppointmentsByRole(userId, role) {
+// NEW: for lawyer role
+async function getAppointmentsByLawyer(lawyerId) {
   const db = getDB();
-
-  let query = "";
-  let params = [];
-
-  if (role === "admin") {
-    query = "SELECT * FROM appointments";
-  } else if (role === "lawyer") {
-    query = "SELECT * FROM appointments WHERE lawyer_id = ?";
-    params = [userId];
-  } else {
-    query = "SELECT * FROM appointments WHERE client_id = ?";
-    params = [userId];
-  }
-
-  const [rows] = await db.execute(query, params);
+  const [rows] = await db.execute(
+    "SELECT * FROM appointments WHERE lawyer_id = ?",
+    [lawyerId]
+  );
   return rows;
 }
+
 
 // matches: 
 async function createAppointment(
@@ -183,6 +173,7 @@ module.exports = {
   getAppointmentById,
   getAppointmentsByStatus,
   getAppointmentsByClient,
+  getAppointmentsByLawyer, // lawyr role
   createAppointment,
   updateAppointment,
   deleteAppointment,
