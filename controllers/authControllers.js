@@ -5,7 +5,7 @@ const { findByEmail, createUser, getAllLawyers, getAllClients } = require("../mo
 const JWT_SECRET = "your_secret_key";
 
 async function register(req, res) {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
   if (!email || !password)
     return res.status(400).json({ error: "Email & password required" });
@@ -16,7 +16,7 @@ async function register(req, res) {
       return res.status(409).json({ error: "Email already exists" });
 
     const hash = await bcrypt.hash(password, 10);
-    const result = await createUser(email, hash);
+    const result = await createUser(name, email, hash);
 
     res.status(201).json({ message: "User registered", userId: result.insertId });
   } catch (err) {
