@@ -59,7 +59,22 @@ async function createConversation(clientId, lawyerId) {
 
   return result;
 }
-
+// GET conversations for logged-in user (whether client or lawyer)
+async function getConversationsByUser(userId) {
+  const db = getDB();
+  const [rows] = await db.execute(
+    `SELECT c.*, 
+      client.name AS client_name,
+      lawyer.name AS lawyer_name
+     FROM conversation c
+     JOIN users client ON c.client_id = client.id
+     JOIN users lawyer ON c.lawyer_id = lawyer.id
+     WHERE c.client_id = ? OR c.lawyer_id = ?
+     ORDER BY c.created_at DESC`,
+    [userId, userId]
+  );
+  return rows;
+}
 
 module.exports = {
   getAllConversations,
@@ -67,4 +82,5 @@ module.exports = {
   getConversationsByClient,
   getConversationsByLawyer,
   createConversation,
+  getConversationsByUser,
 };

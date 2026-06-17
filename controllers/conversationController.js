@@ -3,6 +3,7 @@ const {
   getConversationById,
   getConversationsByClient,
   getConversationsByLawyer,
+  getConversationsByUser,  // hr user ki diff cht show hogi is sey 
   createConversation,
   
 } = require("../models/conversationModel");
@@ -45,6 +46,14 @@ async function byLawyer(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+// GET /conversations/mine
+async function myConversations(req, res) {
+  try {
+    res.json(await getConversationsByUser(req.user.id));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 // POST /conversations
 async function create(req, res) {
@@ -61,4 +70,4 @@ async function create(req, res) {
 }
 
 
-module.exports = { index, show, byClient, byLawyer, create };
+module.exports = { index, show, byClient, byLawyer, create, myConversations }; 
