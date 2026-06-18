@@ -6,11 +6,11 @@ async function findByEmail(email) {
   return rows;
 }
 
-async function createUser(name, email, hash) {
+async function createUser(name, email, hash, role) {
   const db = getDB();
   const [result] = await db.execute(
-    "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-    [name, email, hash]
+    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+    [name, email, hash, role]
   );
   return result;
 }
