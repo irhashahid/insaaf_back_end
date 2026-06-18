@@ -2,11 +2,12 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const {
-  index, show, create, update, remove, updateStatus, approved,
+  index, show, create, update, remove, updateStatus, approved, myCases,
 } = require("../controllers/caseControllers");
 const { getLawyers, getClients } = require("../controllers/authControllers"); //  new
 
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
+router.get("/mine", authMiddleware, myCases);  // GET /cases/mine........ role based API
 router.get("/approved", approved); //get krne approved cases
 router.get("/lawyers", getLawyers);      //  get all lawyers
 router.get("/clients", getClients);      // get all clients

@@ -6,6 +6,8 @@ const {
   deleteCase,
   setCaseStatus,
   getApprovedCases,
+  getCasesByClient,  //  add for role 
+  getCasesByLawyer,  //  add for role 
 } = require("../models/caseModel");
 
 async function index(req, res) {
@@ -106,4 +108,27 @@ async function approved(req, res) {
   }
 }
 
-module.exports = { index, show, create, update, remove, updateStatus, approved };
+// GET /cases/mine  — role-based
+// client → their own cases (by client_id)
+// lawyer → assigned cases (by lawyer_id)
+// admin  → all cases
+async function myCases(req, res) {
+  try {
+    const { id, role } = req.user;
+
+    let rows;
+    if (role === "admin") {
+      rows = await getAllCases();
+    } else if (role === "lawyer") {
+      rows = await getCasesByLawyer(id);
+    } else {
+      // default: client
+      rows = await getCasesByClient(id);
+    }
+
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+module.exports = { index, show, create, update, remove, updateStatus, approved, myCases };

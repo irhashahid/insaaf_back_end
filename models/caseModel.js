@@ -94,6 +94,25 @@ async function getApprovedCases() {
   );
   return rows;
 }
+// for client role
+async function getCasesByClient(clientId) {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM cases WHERE client_id = ?",
+    [clientId]
+  );
+  return rows;
+}
+
+// for lawyer role
+async function getCasesByLawyer(lawyerId) {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM cases WHERE lawyer_id = ?",
+    [lawyerId]
+  );
+  return rows;
+}
 
 module.exports = {
   getAllCases,
@@ -103,4 +122,6 @@ module.exports = {
   deleteCase,
   setCaseStatus,
   getApprovedCases,
+  getCasesByClient,
+  getCasesByLawyer
 };
