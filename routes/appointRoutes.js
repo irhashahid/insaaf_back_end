@@ -13,6 +13,7 @@ const {
   updateStatus,
   pay,        //  add
   approvePay, // add
+  convertCase,
 } = require("../controllers/appointControllers");
 
 // ── specific routes BEFORE /:id ──
@@ -34,5 +35,8 @@ router.patch("/:id/status/:status", authMiddleware, updateStatus); // PATCH /app
 // ── payment routes ────
 router.patch("/:id/pay", authMiddleware, pay);        // PATCH /appointments/1/pay......... client submits pymnt
 router.patch("/:id/approve-payment", authMiddleware, approvePay); // PATCH /appointments/1/approve-payment.......lawyr approves pymnt
+
+// ── conversion route ────
+router.post("/:id/convert-to-case", authMiddleware, convertCase); // POST /appointments/1/convert-to-case........lawyer converts approved appointment into a case
 
 module.exports = router;

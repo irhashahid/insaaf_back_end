@@ -10,9 +10,10 @@ const {
   setAppointmentStatus,
   submitPayment,    //  add
   approvePayment,   //  add
+  convertToCase,  //conversion
 } = require("../models/appointModel");
 
-const { findByEmail } = require("../models/userModel"); //role based access
+const { findByEmail } = require("../models/userModel"); //role based access.ig its not using
 
 // GET /appointments
 async function index(req, res) {
@@ -260,4 +261,24 @@ async function approvePay(req, res) {
   }
 }
 
-module.exports = { index, show, byStatus, byClient, myAppointments, create, update, remove, updateStatus, pay, approvePay, };
+// POST /appointments/:id/convert-to-case
+// only lawyer can convert, only after payment approved
+async function convertCase(req, res) {
+  try {
+    const result = await convertToCase(req.params.id, req.user.id);
+
+    if (!result)
+      return res.status(403).json({
+        error: "Appointment not found, not yours, or payment not approved",
+      });
+
+    res.status(201).json({
+      message: "Appointment converted to case successfully",
+      caseId: result.insertId,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { index, show, byStatus, byClient, myAppointments, create, update, remove, updateStatus, pay, approvePay, convertCase };

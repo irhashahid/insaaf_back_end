@@ -167,6 +167,47 @@ async function approvePayment(id, lawyerId) {
   );
   return result;
 }
+// Convert an approved appointment into a case
+async function convertToCase(appointmentId, lawyerId) {
+  const db = getDB();
+
+  // 1. Get the appointment / must belong to this lawyer + payment approved
+  const [appt] = await db.execute(
+    "SELECT * FROM appointments WHERE id = ? AND lawyer_id = ? AND payment_status = 1",
+    [appointmentId, lawyerId]
+  );
+
+  if (appt.length === 0) return null;
+
+  const a = appt[0];
+
+  // 2. Get client's name from users table
+  const [client] = await db.execute(
+    "SELECT name FROM users WHERE id = ?",
+    [a.client_id]
+  );
+
+  // 3. Insert into cases table / using valid ENUM value 'pending'
+  const [result] = await db.execute(
+    `INSERT INTO cases 
+     (description_case, name, phone, address, case_type, case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id, client_id, lawyer_id)
+     VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, NULL, ?, NULL, ?, ?)`,
+    [
+      a.short_description,
+      client[0]?.name ?? "Unknown",
+      "",                     // phone — appointments table has no phone column
+      "",                     // address — appointments has no address column
+      a.case_type,
+      "pending",              // valid ENUM value ✅
+      a.law_type,             // stored as depart_concern
+      a.payment_status,
+      a.client_id,
+      a.lawyer_id,
+    ]
+  );
+
+  return result;
+}
 
 module.exports = {
   getAllAppointments,
@@ -180,4 +221,5 @@ module.exports = {
   setAppointmentStatus,
   submitPayment,
   approvePayment,
+  convertToCase,   //convrt the approved appointment into a case by lawyer and then admin will approve the case and then it will be listed in approved cases for client and lawyer both
 };
