@@ -190,8 +190,8 @@ async function convertToCase(appointmentId) {
   // 3. Insert into cases table / using valid ENUM value 'pending'
   const [result] = await db.execute(
     `INSERT INTO cases 
-     (description_case, name, phone, address, case_type, case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id, client_id, lawyer_id)
-     VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, NULL, ?, NULL, ?, ?)`,
+     (description_case, name, phone, address, case_type, case_start_date, case_status, depart_concern, hearing_date, payment_status, admin_id, client_id, lawyer_id, appointment_id)
+     VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, NULL, ?, NULL, ?, ?, ?)`,
     [
       a.short_description,
       client[0]?.name ?? "Unknown",
@@ -204,6 +204,7 @@ async function convertToCase(appointmentId) {
       a.payment_status,
       a.client_id,
       a.lawyer_id,
+      a.id // appointment_id for reference
     ]
   );
 
