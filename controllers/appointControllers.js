@@ -265,8 +265,8 @@ async function approvePay(req, res) {
 // only lawyer can convert, only after payment approved
 async function convertCase(req, res) {
   try {
-    const result = await convertToCase(req.params.id, req.user.id);
-
+    const result = await convertToCase(req.params.id);
+    console.log("convertCase result:", req.params.id);
     if (!result)
       return res.status(403).json({
         error: "Appointment not found, not yours, or payment not approved",

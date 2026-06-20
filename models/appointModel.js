@@ -168,22 +168,22 @@ async function approvePayment(id, lawyerId) {
   return result;
 }
 // Convert an approved appointment into a case
-async function convertToCase(appointmentId, lawyerId) {
+async function convertToCase(appointmentId) {
   const db = getDB();
 
   // 1. Get the appointment / must belong to this lawyer + payment approved
   const [appt] = await db.execute(
-    "SELECT * FROM appointments WHERE id = ? AND lawyer_id = ? AND payment_status = 1",
-    [appointmentId, lawyerId]
+    "SELECT * FROM appointments WHERE id = ?",
+    [appointmentId]
   );
 
   if (appt.length === 0) return null;
 
   const a = appt[0];
 
-  // 2. Get client's name from users table
+  // 2. Get client's name nd phn number from users table
   const [client] = await db.execute(
-    "SELECT name FROM users WHERE id = ?",
+    "SELECT name, phone, address FROM users WHERE id = ?",
     [a.client_id]
   );
 
@@ -195,8 +195,9 @@ async function convertToCase(appointmentId, lawyerId) {
     [
       a.short_description,
       client[0]?.name ?? "Unknown",
-      "",                     // phone — appointments table has no phone column
-      "",                     // address — appointments has no address column
+      client[0]?.phone ?? "",             // phone -  has now phone column
+      client[0]?.address ?? "",            // address -  now address column
+
       a.case_type,
       "pending",              // valid ENUM value ✅
       a.law_type,             // stored as depart_concern
@@ -208,6 +209,8 @@ async function convertToCase(appointmentId, lawyerId) {
 
   return result;
 }
+
+
 
 module.exports = {
   getAllAppointments,
