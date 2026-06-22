@@ -8,10 +8,11 @@ const {
   updateAppointment,
   deleteAppointment,
   setAppointmentStatus,
-  submitPayment,    //  add
-  approvePayment,   //  add
+  submitPayment,    
+  approvePayment,   
   convertToCase,  //conversion
 } = require("../models/appointModel");
+
 
 const { findByEmail } = require("../models/userModel"); //role based access.ig its not using
 
@@ -59,9 +60,9 @@ async function byClient(req, res) {
 }
 
 // GET /appointments/mine  = role-based wrk
-// client  → their own appointments (by client_id)
-// lawyer  → assigned appointments (by lawyer_id)
-// admin   → all appointments
+// client   their own appointments (by client_id)
+// lawyer   assigned appointments (by lawyer_id)
+// admin    all appointments
 async function myAppointments(req, res) {
   try {
     const { id, role } = req.user;
@@ -70,10 +71,10 @@ async function myAppointments(req, res) {
     if (role === "admin") {
       rows = await getAllAppointments();
     } else if (role === "lawyer") {
-      rows = await getAppointmentsByLawyer(id);
+      rows = await getAppointmentsByLawyer(id,name );
     } else {
       // default: client
-      rows = await getAppointmentsByClient(id);
+      rows = await getAppointmentsByClient(id,name );
     }
 
     res.json(rows);
@@ -180,9 +181,9 @@ async function remove(req, res) {
   }
 }
 
-// PATCH /appointments/:id/accepted  → Accept button
-// PATCH /appointments/:id/rejected  → Reject button
-// PATCH /appointments/:id/pending   → Reset (↺) button
+// PATCH /appointments/:id/accepted or rejcted or pending  
+
+  
 async function updateStatus(req, res) {
   try {
     const { id, status } = req.params;
@@ -262,7 +263,7 @@ async function approvePay(req, res) {
 }
 
 // POST /appointments/:id/convert-to-case
-// only lawyer can convert, only after payment approved
+// only lawyer can convert, only after payment is approved 
 async function convertCase(req, res) {
   try {
     const result = await convertToCase(req.params.id);

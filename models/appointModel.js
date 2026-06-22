@@ -37,7 +37,7 @@ async function getAppointmentsByStatus(status) {
   return rows;
 }
 
-// matches: client_id → FOREIGN KEY → users.id
+// matches: client_id -> FOREIGN KEY -> users.id
 async function getAppointmentsByClient(clientId) {
   const db = getDB();
   const [rows] = await db.execute(
@@ -46,7 +46,7 @@ async function getAppointmentsByClient(clientId) {
   );
   return rows;
 }
-// NEW: for lawyer role
+//  for lawyer role
 async function getAppointmentsByLawyer(lawyerId) {
   const db = getDB();
   const [rows] = await db.execute(
@@ -157,6 +157,7 @@ async function submitPayment(id, clientId, payment_mode, payment_receipt) {
 }
 
 // Lawyer approves payment → payment_status = 1
+
 async function approvePayment(id, lawyerId) {
   const db = getDB();
   const [result] = await db.execute(
@@ -180,6 +181,7 @@ async function convertToCase(appointmentId) {
   if (appt.length === 0) return null;
 
   const a = appt[0];
+
 
   // 2. Get client's name nd phn number from users table
   const [client] = await db.execute(
