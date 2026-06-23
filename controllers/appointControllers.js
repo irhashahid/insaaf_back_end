@@ -71,10 +71,10 @@ async function myAppointments(req, res) {
     if (role === "admin") {
       rows = await getAllAppointments();
     } else if (role === "lawyer") {
-      rows = await getAppointmentsByLawyer(id,name );
+      rows = await getAppointmentsByLawyer(id);
     } else {
       // default: client
-      rows = await getAppointmentsByClient(id,name );
+      rows = await getAppointmentsByClient(id);
     }
 
     res.json(rows);
