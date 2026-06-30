@@ -8,12 +8,13 @@ const appointRoutes = require("./routes/appointRoutes");
 const conversationRoutes = require("./routes/conversationRoutes");
 const messageRoutes = require("./routes/messageRoutes");       // add
 const ratingRoutes = require("./routes/ratingRoutes");  
-
+const notificationRoutes = require("./routes/notificationRoutes"); // add
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.use("/", authRoutes);
+app.use("/notifications", notificationRoutes);
 app.use("/lawyers", lawyerRoutes);
 app.use("/cases", caseRoutes);
 app.use("/appointments", appointRoutes);

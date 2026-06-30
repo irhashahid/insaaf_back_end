@@ -15,6 +15,8 @@ const {
 
 
 const { findByEmail } = require("../models/userModel"); //role based access.ig its not using
+const { createNotification } = require("../models/notificationModel"); //  add for notify
+const { getDB } = require("../config/db"); //  ADDED — needed to look up client_id for notifications
 
 // GET /appointments
 async function index(req, res) {
@@ -128,6 +130,15 @@ async function create(req, res) {
       req.user.id
     );
 
+    //  ADDED: notify lawyer about new appointment request
+    await createNotification({
+      user_id: lawyer_id,
+      title: "New Appointment Request",
+      body: "A client has booked an appointment with you",
+      type: "appointment",
+      ref_id: result.insertId,
+    });
+
     res.status(201).json({
       message: "Appointment created",
       id: result.insertId
@@ -212,6 +223,19 @@ const result = await setAppointmentStatus(
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found" });
 
+    //  ADDED: notify client about status change
+    const db = getDB();
+    const [appt] = await db.execute("SELECT client_id FROM appointments WHERE id = ?", [id]);
+    if (appt.length > 0) {
+      await createNotification({
+        user_id: appt[0].client_id,
+        title: `Appointment ${status}`,
+        body: `Your appointment has been ${status.toLowerCase()} by the lawyer`,
+        type: "appointment",
+        ref_id: parseInt(id),
+      });
+    }
+
     res.json({ message: `Appointment marked as ${status}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -241,6 +265,18 @@ async function pay(req, res) {
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found or not yours" });
 
+    //  ADDED: notify lawyer that client submit nd the payment proof
+    const db = getDB();
+    const [appt] = await db.execute("SELECT lawyer_id FROM appointments WHERE id = ?", [req.params.id]);
+    if (appt.length > 0) {
+      await createNotification({
+        user_id: appt[0].lawyer_id,
+        title: "Payment Submitted",
+        body: "A client has submitted payment for your review",
+        type: "payment",
+        ref_id: parseInt(req.params.id),
+      });
+    }
     res.json({ message: "Payment submitted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -273,6 +309,19 @@ async function convertCase(req, res) {
         error: "Appointment not found, not yours, or payment not approved",
       });
 
+      //  ADDED: notify client about their appointmneet became a case
+      const db = getDB();
+    const [appt] = await db.execute("SELECT client_id FROM appointments WHERE id = ?", [req.params.id]);
+    if (appt.length > 0) {
+      await createNotification({
+        user_id: appt[0].client_id,
+        title: "Case Created",
+        body: "Your appointment has been converted into an active case",
+        type: "case",
+        ref_id: result.insertId,
+      });
+    }
+    
     res.status(201).json({
       message: "Appointment converted to case successfully",
       caseId: result.insertId,
