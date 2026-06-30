@@ -1,0 +1,11 @@
+const express = require("express");
+const router = express.Router();
+const authMiddleware = require("../middleware/authMiddleware");
+const { index, markRead, markAllAsRead } = require("../controllers/notificationController");
+
+// specific routes BEFORE /:id
+router.get("/", authMiddleware, index);                   // GET /notifications
+router.patch("/read-all", authMiddleware, markAllAsRead); // PATCH /notifications/read-all
+router.patch("/:id/read", authMiddleware, markRead);      // PATCH /notifications/5/read
+
+module.exports = router;
