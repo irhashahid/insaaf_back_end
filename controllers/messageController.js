@@ -5,6 +5,8 @@ const {
   markAsRead,
 } = require("../models/messageModel");
 
+const { createNotification } = require("../models/notificationModel"); // for notify
+
 // GET /messages/conversation/:conversationId
 async function byConversation(req, res) {
   try {
@@ -41,6 +43,16 @@ async function create(req, res) {
       receiver_id,
       message,
     });
+
+    // ADDED: notify receiver about new message
+    await createNotification({
+      user_id: receiver_id,
+      title: "New Message",
+      body: "You have received a new message",
+      type: "message",
+      ref_id: conversation_id,
+    });
+
     res.status(201).json({ message: "Message sent", id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -7,6 +7,7 @@ const {
 } = require("../models/ratingModel");
 
 const { getDB } = require("../config/db");
+const { createNotification } = require("../models/notificationModel"); //  ADDED for notify
 
 // GET /ratings/lawyer/:lawyerId
 // all ratings + average for a lawyer
@@ -67,6 +68,15 @@ async function create(req, res) {
       req.user.id
     );
 
+    //  ADDED: notify lawyer that client has rated them
+    await createNotification({
+      user_id: lawyer_id,
+      title: "New Rating Received",
+      body: `A client rated you ${rating} stars`,
+      type: "rating",
+      ref_id: result.insertId,
+    });
+    
     res.status(201).json({
       message: "Rating submitted successfully",
       id: result.insertId,

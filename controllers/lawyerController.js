@@ -8,6 +8,8 @@ const {
   getApprovedLawyers,
 } = require("../models/lawyerModel");
 
+const { createNotification } = require("../models/notificationModel"); //  ADDED for notify
+
 async function index(req, res) {
   try {
     res.json(await getAllLawyers());
@@ -62,6 +64,16 @@ async function updateStatus(req, res) {
      result = await setLawyerStatus(req.params.id, req.params.status);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Lawyer not found" });
+
+    // ADDED: notify lawyer their approval status changed
+    await createNotification({
+      user_id: req.params.id,
+      title: `Account ${req.params.status}`,
+      body: `Your lawyer account has been ${req.params.status.toLowerCase()} by admin`,
+      type: "appointment",
+      ref_id: null,
+    });
+
     res.json({ message: "Status updated successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

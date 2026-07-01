@@ -292,6 +292,19 @@ async function approvePay(req, res) {
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found or not yours" });
 
+  //  ADDED: notify client that lawyer approved the payment
+  const db = getDB();
+    const [appt] = await db.execute("SELECT client_id FROM appointments WHERE id = ?", [req.params.id]);
+    if (appt.length > 0) {
+      await createNotification({
+        user_id: appt[0].client_id,
+        title: "Payment Approved",
+        body: "Your payment has been approved. Appointment is fully booked!",
+        type: "payment",
+        ref_id: parseInt(req.params.id),
+      });
+    }
+    
     res.json({ message: "Payment approved, appointment fully booked" });
   } catch (err) {
     res.status(500).json({ error: err.message });
