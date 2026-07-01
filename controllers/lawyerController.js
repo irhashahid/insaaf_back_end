@@ -70,7 +70,7 @@ async function updateStatus(req, res) {
       user_id: req.params.id,
       title: `Account ${req.params.status}`,
       body: `Your lawyer account has been ${req.params.status.toLowerCase()} by admin`,
-      type: "appointment",
+      type: "account",
       ref_id: null,
     });
 

@@ -6,6 +6,6 @@ const { index, markRead, markAllAsRead } = require("../controllers/notificationC
 // specific routes BEFORE /:id
 router.get("/", authMiddleware, index);                   // GET /notifications
 router.patch("/read-all", authMiddleware, markAllAsRead); // PATCH /notifications/read-all
-router.patch("/:id/read", authMiddleware, markRead);      // PATCH /notifications/5/read
-
+router.patch("/:id/read", authMiddleware, markRead);      // PATCH /notifications/5/read.....hve to put the noti table id not the user-id
+ 
 module.exports = router;

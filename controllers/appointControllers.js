@@ -292,7 +292,7 @@ async function approvePay(req, res) {
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found or not yours" });
 
-  //  ADDED: notify client that lawyer approved the payment
+  //  ADDED: notify client who's paymnt is apporoved
   const db = getDB();
     const [appt] = await db.execute("SELECT client_id FROM appointments WHERE id = ?", [req.params.id]);
     if (appt.length > 0) {
