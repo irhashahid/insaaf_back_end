@@ -53,10 +53,29 @@ async function markAllRead(userId) {
   return result;
 }
 
+// GET all notifications (for admin)
+async function getAllNotifications() {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM notifications ORDER BY created_at DESC"
+  );
+  return rows;
+}
+  // GET unread count for admin (all)
+async function getTotalUnreadCount() {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT COUNT(*) AS unread FROM notifications WHERE is_read = 0"
+  );
+  return rows[0];
+}
+
 module.exports = {
   getNotificationsByUser,
   getUnreadCount,
   createNotification,
   markNotificationRead,
   markAllRead,
+  getAllNotifications,   
+  getTotalUnreadCount,   
 };

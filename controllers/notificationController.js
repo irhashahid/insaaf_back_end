@@ -3,6 +3,8 @@ const {
   getUnreadCount,
   markNotificationRead,
   markAllRead,
+  getAllNotifications,
+  getTotalUnreadCount,  
 } = require("../models/notificationModel");
 
 // GET /notifications
@@ -37,5 +39,30 @@ async function markAllAsRead(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+// GET /notifications/mine - role based wrk
 
-module.exports = { index, markRead, markAllAsRead };
+async function myNotifications(req, res) {
+  try {
+    const { id, role } = req.user;
+
+    let notifications;
+    let unread;
+
+    if (role === "admin") {
+      notifications = await getAllNotifications();
+      const count = await getTotalUnreadCount();
+      unread = count.unread;
+    } else {
+// client and lawyer both get only their own
+      notifications = await getNotificationsByUser(id);
+      const count = await getUnreadCount(id);
+      unread = count.unread;
+    }
+
+    res.json({ unread, notifications });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { index, markRead, markAllAsRead, myNotifications };
