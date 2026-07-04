@@ -20,10 +20,18 @@ async function getAllAppointments() {
 // matches: id column
 async function getAppointmentById(id) {
   const db = getDB();
-  const [rows] = await db.execute(
-    "SELECT * FROM appointments WHERE id = ?",
-    [id]
-  );
+  const [rows] = await db.execute(`
+    SELECT 
+      a.*,
+      client.name AS client_name,
+      client.email AS client_email,
+      lawyer.name AS lawyer_name,
+      lawyer.email AS lawyer_email
+    FROM appointments a
+    JOIN users client ON a.client_id = client.id
+    JOIN users lawyer ON a.lawyer_id = lawyer.id
+    WHERE a.id = ?
+  `, [id]);
   return rows;
 }
 
@@ -40,19 +48,36 @@ async function getAppointmentsByStatus(status) {
 // matches: client_id -> FOREIGN KEY -> users.id
 async function getAppointmentsByClient(clientId) {
   const db = getDB();
-  const [rows] = await db.execute(
-    "SELECT * FROM appointments WHERE client_id = ?",
-    [clientId]
-  );
+  const [rows] = await db.execute(`
+    SELECT 
+    a.*,
+      client.name AS client_name,
+      client.email AS client_email,
+      lawyer.name AS lawyer_name,
+      lawyer.email AS lawyer_email
+    FROM appointments a
+    JOIN users client ON a.client_id = client.id
+    JOIN users lawyer ON a.lawyer_id = lawyer.id
+    WHERE a.client_id = ?
+  `, [clientId]);
+  
   return rows;
 }
 //  for lawyer role
 async function getAppointmentsByLawyer(lawyerId) {
   const db = getDB();
-  const [rows] = await db.execute(
-    "SELECT * FROM appointments WHERE lawyer_id = ?",
-    [lawyerId]
-  );
+  const [rows] = await db.execute(`
+    SELECT 
+      a.*,
+      client.name AS client_name,
+      client.email AS client_email,
+      lawyer.name AS lawyer_name,
+      lawyer.email AS lawyer_email
+    FROM appointments a
+    JOIN users client ON a.client_id = client.id
+    JOIN users lawyer ON a.lawyer_id = lawyer.id
+    WHERE a.lawyer_id = ?
+  `, [lawyerId]);
   return rows;
 }
 
