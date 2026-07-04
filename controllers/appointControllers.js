@@ -91,6 +91,7 @@ async function create(req, res) {
 
     const {
       lawyer_id,
+      date,
       law_type,
       case_type,
       short_description,
@@ -105,6 +106,7 @@ async function create(req, res) {
     // required fields
     if (
       !lawyer_id ||
+      !date ||
       !law_type ||
       !case_type ||
       !short_description ||
@@ -120,6 +122,7 @@ async function create(req, res) {
     const result = await createAppointment(
       {
         lawyer_id,
+        date,
         law_type,
         case_type,
         short_description,
@@ -160,6 +163,7 @@ async function update(req, res) {
 
     const {
   lawyer_id,
+  date,
   law_type,
   case_type,
   short_description,
@@ -168,10 +172,11 @@ async function update(req, res) {
   appointment_mode
 } = req.body;
     const result = await updateAppointment(
-      { lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode },
+      { lawyer_id, date, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode },
       req.params.id,
       req.user.id   // only update your own appointment
     );
+    
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Not found or not yours" });
     res.json({ message: "Appointment updated" });

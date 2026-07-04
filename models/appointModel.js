@@ -60,6 +60,7 @@ async function getAppointmentsByLawyer(lawyerId) {
 // matches: 
 async function createAppointment(
   { lawyer_id,
+    date,
     law_type,
     case_type,
     short_description,
@@ -75,6 +76,7 @@ async function createAppointment(
      (
        client_id,
        lawyer_id,
+       date,
        law_type,
        case_type,
        short_description,
@@ -83,10 +85,11 @@ async function createAppointment(
        appointment_mode,
        status
      )
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       clientId,
       lawyer_id,
+      date,
       law_type,
       case_type,
       short_description,
@@ -102,11 +105,12 @@ async function createAppointment(
 // matches: all updatable columns (not id, client_id, created_at)
 async function updateAppointment(
   { lawyer_id,
-  law_type,
-  case_type,
-  short_description,
-  slot_start_time,
-  slot_end_time,
+    date,
+    law_type,
+    case_type,
+    short_description,
+    slot_start_time,
+    slot_end_time,
   appointment_mode
    },
   id,
@@ -116,9 +120,9 @@ async function updateAppointment(
   const [result] = await db.execute(
     `UPDATE appointments 
      SET
-      lawyer_id=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?
+       lawyer_id=?, date=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?
      WHERE id=? AND client_id=?`,
-    [lawyer_id, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  id, clientId]
+    [lawyer_id, date, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  id, clientId]
   );
   return result;
 }
