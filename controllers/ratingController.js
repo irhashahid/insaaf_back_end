@@ -68,14 +68,21 @@ async function create(req, res) {
       req.user.id
     );
 
-    //  ADDED: notify lawyer that client has rated them
-    await createNotification({
-      user_id: lawyer_id,
-      title: "New Rating Received",
-      body: `A client rated you ${rating} stars`,
-      type: "rating",
-      ref_id: result.insertId,
-    });
+    // fetch client name for personalized notification
+const [clientRows] = await db.execute(
+  "SELECT name FROM users WHERE id = ?",
+  [req.user.id]
+);
+const clientName = clientRows[0]?.name ?? "A client";
+
+//  ADDED: notify lawyer that client has rated them
+await createNotification({
+  user_id: lawyer_id,
+  title: "New Rating Received",
+  body: `${clientName} rated you ${rating} stars`,
+  type: "rating",
+  ref_id: result.insertId,
+});
     
     res.status(201).json({
       message: "Rating submitted successfully",
