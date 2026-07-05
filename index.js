@@ -1,3 +1,5 @@
+require("dotenv").config(); // for if frgot password and email verification
+
 const express = require("express");
 const cors = require("cors");
 const { initDB } = require("./config/db");

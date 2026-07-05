@@ -32,6 +32,7 @@ async function getAppointmentById(id) {
     JOIN users lawyer ON a.lawyer_id = lawyer.id
     WHERE a.id = ?
   `, [id]);
+
   return rows;
 }
 

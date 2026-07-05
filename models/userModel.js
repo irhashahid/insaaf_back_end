@@ -6,6 +6,37 @@ async function findByEmail(email) {
   return rows;
 }
 
+// Save reset token + expirry for usr
+async function saveResetToken(email, token, expiry) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?",
+    [token, expiry, email]
+  );
+  return result;
+}
+
+// Find usr by the  reset token
+async function findByResetToken(token) {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()",
+    [token]
+  );
+  return rows;
+}
+
+// Update password + clear token
+async function updatePasswordAndClearToken(userId, hashedPassword) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?",
+    [hashedPassword, userId]
+  );
+  return result;
+}
+
+
 async function createUser(name, email, hash, role) {
   const db = getDB();
   const [result] = await db.execute(
@@ -28,4 +59,4 @@ async function getAllClients() {
   return rows;
 }
 
-module.exports = { findByEmail, createUser, getAllLawyers, getAllClients };
+module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllLawyers, getAllClients };
