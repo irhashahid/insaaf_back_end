@@ -45,10 +45,10 @@ async function createUser(name, email, hash, role) {
   );
   return result;
 }
-//gte all lawyers and clients
+//get all lawyers and clients
 async function getAllLawyers() {
   const db = getDB();
-  const [rows] = await db.execute("SELECT id, name, email, specialization, location, experience, cases, status FROM users WHERE role = 'lawyer'"
+  const [rows] = await db.execute("SELECT id, name, email, specialization, category, location, experience, cases, status FROM users WHERE role = 'lawyer'"
   );
   return rows;
 }
@@ -59,4 +59,16 @@ async function getAllClients() {
   return rows;
 }
 
-module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllLawyers, getAllClients };
+// Update lawyer profile including specialization and category
+async function updateUserProfile(userId, { specialization, category, location, experience, cases, license }) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE users 
+     SET specialization = ?, category = ?, location = ?, experience = ?, cases = ?, license = ?
+     WHERE id = ?`,
+    [specialization, category, location, experience, cases, license, userId]
+  );
+  return result;
+}
+
+module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllLawyers, getAllClients, updateUserProfile };

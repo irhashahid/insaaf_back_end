@@ -10,7 +10,8 @@ const {
   getAllClients,
   saveResetToken,
   findByResetToken,
-  updatePasswordAndClearToken, } = require("../models/userModel"); //  updated
+  updatePasswordAndClearToken,
+  updateUserProfile } = require("../models/userModel"); //  updated
 
 const JWT_SECRET = "your_secret_key";
 
@@ -159,4 +160,27 @@ async function resetPassword(req, res) {
   }
 }
 
-module.exports = { register, login, getLawyers, getClients, forgotPassword, resetPassword }; 
+// PUT /update-profile
+// called by lawyer to set their specialization, category, location etc
+async function updateProfile(req, res) {
+  try {
+    const { specialization, category, location, experience, cases, license } = req.body;
+
+    const result = await updateUserProfile(req.user.id, {
+      specialization,
+      category,
+      location,
+      experience,
+      cases,
+      license,
+    });
+ if (result.affectedRows === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    res.json({ message: "Profile updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { register, login, getLawyers, getClients, forgotPassword, resetPassword, updateProfile }; 
