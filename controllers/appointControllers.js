@@ -90,6 +90,7 @@ async function create(req, res) {
   try {
 
     const {
+      clientId, // for admin booking on behalf of client .. mr
       lawyer_id,
       date,
       law_type,
@@ -112,13 +113,14 @@ async function create(req, res) {
       !short_description ||
       !slot_start_time ||
       !slot_end_time ||
-      !appointment_mode
+      !appointment_mode ||
+      (req.user.role === 'admin' && !client_id)
     ) {
       return res.status(400).json({
         error: "Required fields missing"
       });
     }
-
+    const targetClientId = (req.user.role === 'admin' && client_id) ? client_id : req.user.id;
     const result = await createAppointment(
       {
         lawyer_id,
@@ -130,14 +132,14 @@ async function create(req, res) {
         slot_end_time,
         appointment_mode,
       },
-      req.user.id
+      targetClientId
     );
 
     // fetch client name for personalized notifiyy
     const db = getDB();
     const [clientRows] = await db.execute(
       "SELECT name FROM users WHERE id = ?",
-   [req.user.id]
+   [targetClientId]
 );
 const clientName = clientRows[0]?.name ?? "A client";
 

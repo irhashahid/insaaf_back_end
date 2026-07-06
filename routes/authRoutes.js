@@ -12,12 +12,12 @@ const {
 router.post("/register", register);
 router.post("/login", login);
 
-// ── get all lwyrs and clients ──
-router.get("/lawyers", getLawyers);       // GET /lawyers
-router.get("/clients", getClients);       // GET /clients
+//  get all lwyrs and clients 
+router.get("/all-lawyers", getLawyers);       // GET /lawyers
+router.get("/all-clients", getClients);       // GET /clients
 
-// ── password reset ──
-router.post("/forgot-password", forgotPassword);   // POST /forgot password
-router.post("/reset-password", resetPassword);     // POST /reset password
+// password reset 
+router.post("/forgot-password", forgotPassword);   // POST /forgot password.. email field required for test 
+router.post("/reset-password", resetPassword);     // POST /reset password... token, pass, confrm pass are required
 
 module.exports = router;
