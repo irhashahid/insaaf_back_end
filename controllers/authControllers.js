@@ -11,7 +11,9 @@ const {
   saveResetToken,
   findByResetToken,
   updatePasswordAndClearToken,
-  updateUserProfile } = require("../models/userModel"); //  updated
+  updateUserProfile,
+  saveLicense,
+ } = require("../models/userModel"); //  updated
 
 const JWT_SECRET = "your_secret_key";
 
@@ -66,20 +68,23 @@ async function login(req, res) {
   }
 }
 
-// get lawyrs and cliemts
-async function getLawyers(req, res) {
-  try {
-    const lawyers = await getAllLawyers();
-    res.status(200).json({ success: true, count: lawyers.length, data: lawyers });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
+// get cliemts
 
 async function getClients(req, res) {
   try {
     const clients = await getAllClients();
     res.status(200).json({ success: true, count: clients.length, data: clients });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+// get lawyers
+
+async function getLawyers(req, res) {
+  try {
+    const lawyers = await getAllLawyers();
+    res.status(200).json({ success: true, count: lawyers.length, data: lawyers });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -183,4 +188,24 @@ async function updateProfile(req, res) {
   }
 }
 
-module.exports = { register, login, getLawyers, getClients, forgotPassword, resetPassword, updateProfile }; 
+// POST /upload license
+// called by lawyer during or after registration
+async function uploadLicense(req, res) {
+  try {
+    // multer puts file info in req.file
+    if (!req.file)
+      return res.status(400).json({ error: "License file is required" });
+
+    // save file path to DB
+    const licensePath = req.file.path;
+    await saveLicense(req.user.id, licensePath);
+
+    res.status(201).json({
+      message: "License uploaded successfully",
+      license: licensePath,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense }; 

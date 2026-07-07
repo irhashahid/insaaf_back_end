@@ -45,17 +45,19 @@ async function createUser(name, email, hash, role) {
   );
   return result;
 }
-//get all lawyers and clients
-async function getAllLawyers() {
-  const db = getDB();
-  const [rows] = await db.execute("SELECT id, name, email, specialization, category, location, experience, cases, status FROM users WHERE role = 'lawyer'"
-  );
-  return rows;
-}
+//get all clients nd lawyers
 
 async function getAllClients() {
   const db = getDB();
   const [rows] = await db.execute("SELECT id, name, email, location, status FROM users WHERE role = 'client'");
+  return rows;
+}
+
+async function getAllLawyers() {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT id, name, email, specialization, category, location, experience, cases, status FROM users WHERE role = 'lawyer'"
+  );
   return rows;
 }
 
@@ -71,4 +73,14 @@ async function updateUserProfile(userId, { specialization, category, location, e
   return result;
 }
 
-module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllLawyers, getAllClients, updateUserProfile };
+// Save license file path to user
+async function saveLicense(userId, licensePath) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE users SET license = ? WHERE id = ?",
+    [licensePath, userId]
+  );
+  return result;
+}
+
+module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, };
