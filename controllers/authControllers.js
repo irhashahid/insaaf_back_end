@@ -13,6 +13,7 @@ const {
   updatePasswordAndClearToken,
   updateUserProfile,
   saveLicense,
+  updateBasicProfile,
  } = require("../models/userModel"); //  updated
 
 const JWT_SECRET = "your_secret_key";
@@ -107,7 +108,7 @@ async function forgotPassword(req, res) {
 
     await saveResetToken(email, token, expiry);
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    const resetLink = `http://insaaf.sandbox.pk/reset-password?token=${token}`;
 
     await transporter.sendMail({
       from: `"Insaaf Connect" <${process.env.MAIL_USER}>`,
@@ -208,4 +209,29 @@ async function uploadLicense(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense }; 
+
+// PUT /edit profile
+// any user can update their basic profile
+async function editProfile(req, res) {
+  try {
+    const { name, email, phone, location } = req.body;
+
+    if (!name || !email)
+      return res.status(400).json({ error: "Name and email are required" });
+
+    const result = await updateBasicProfile(req.user.id, {
+      name,
+      email,
+      phone: phone ?? null,
+      location: location ?? null,
+    });
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    res.json({ message: "Profile updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense, editProfile}; 

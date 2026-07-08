@@ -82,5 +82,17 @@ async function saveLicense(userId, licensePath) {
   );
   return result;
 }
+// Update basic profile for any usr (client, lawyer, admin)
+async function updateBasicProfile(userId, { name, email, phone, location }) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE users 
+     SET name = ?, email = ?, phone = ?, location = ?
+     WHERE id = ?`,
+    [name, email, phone, location, userId]
+  );
+  return result;
+}
 
-module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, };
+
+module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, updateBasicProfile, };

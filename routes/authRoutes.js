@@ -9,7 +9,8 @@ const {
   forgotPassword,    
   resetPassword,
   updateProfile,
-  uploadLicense,    
+  uploadLicense,
+  editProfile,    
 } = require("../controllers/authControllers");
 
 router.post("/register", register);
@@ -23,10 +24,14 @@ router.post("/forgot-password", forgotPassword);   // POST /forgot password.. em
 router.post("/reset-password", resetPassword);     // POST /reset password... token, pass, confrm pass are reqrd
 
 // for profle updtion
-router.put("/update-profile", authMiddleware, updateProfile); // PUT /update profile
+router.put("/update-profile", authMiddleware, updateProfile); // PUT /update profile.. users speicalization etc
 
 // add this route
 router.post("/upload-license", authMiddleware, upload.single("license"),  // "license" = field name in form-data
   uploadLicense
 );
+
+// edit basic profile ( all users)
+router.put("/edit-profile", authMiddleware, editProfile); // PUT /edit profile
+
 module.exports = router;
