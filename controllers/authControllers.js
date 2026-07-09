@@ -14,6 +14,7 @@ const {
   updateUserProfile,
   saveLicense,
   updateBasicProfile,
+  findUserById,
  } = require("../models/userModel"); //  updated
 
 const JWT_SECRET = "your_secret_key";
@@ -116,7 +117,7 @@ async function forgotPassword(req, res) {
       subject: "Password Reset Request",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #3D2B1F;">Reset Your Password</h2>
+          <h2 style="color: #5c412e;">Reset Your Password</h2>
           <p>You requested a password reset for your Insaaf Connect account.</p>
           <p>Click the button below to reset your password. This link expires in <strong>1 hour</strong>.</p>
           <a href="${resetLink}" 
@@ -234,4 +235,47 @@ async function editProfile(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense, editProfile}; 
+
+// PUT /change password
+async function changePassword(req, res) {
+  try {
+    const { current_password, new_password, confirm_password } = req.body;
+
+    // validate all fields present
+    if (!current_password || !new_password || !confirm_password)
+      return res.status(400).json({
+        error: "current_password, new_password, confirm_password are required",
+      });
+
+    // check new passwords match
+    if (new_password !== confirm_password)
+      return res.status(400).json({ error: "New passwords do not match" });
+
+    // check minimum length
+    if (new_password.length < 6)
+      return res.status(400).json({
+        error: "New password must be at least 6 characters",
+      });
+
+    // get usr from DB
+    const users = await findUserById(req.user.id);
+    if (users.length === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    const user = users[0];
+
+    // verify curent password is correct
+    const isMatch = await bcrypt.compare(current_password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ error: "Current password is incorrect" });
+
+    // hash new password and save
+    const hashed = await bcrypt.hash(new_password, 10);
+    await updatePasswordAndClearToken(user.id, hashed);
+
+    res.json({ message: "Password changed successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense, editProfile, changePassword }; 

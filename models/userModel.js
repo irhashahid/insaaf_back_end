@@ -94,5 +94,14 @@ async function updateBasicProfile(userId, { name, email, phone, location }) {
   return result;
 }
 
+// Change password — needs current password verification
+async function findUserById(userId) {
+  const db = getDB();
+  const [rows] = await db.execute(
+    "SELECT * FROM users WHERE id = ?",
+    [userId]
+  );
+  return rows;
+}
 
-module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, updateBasicProfile, };
+module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, updateBasicProfile, findUserById };

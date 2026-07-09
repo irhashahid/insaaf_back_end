@@ -10,7 +10,8 @@ const {
   resetPassword,
   updateProfile,
   uploadLicense,
-  editProfile,    
+  editProfile,
+  changePassword,    
 } = require("../controllers/authControllers");
 
 router.post("/register", register);
@@ -33,5 +34,8 @@ router.post("/upload-license", authMiddleware, upload.single("license"),  // "li
 
 // edit basic profile ( all users)
 router.put("/edit-profile", authMiddleware, editProfile); // PUT /edit profile
+
+// change password 
+router.put("/change-password", authMiddleware, changePassword);
 
 module.exports = router;
