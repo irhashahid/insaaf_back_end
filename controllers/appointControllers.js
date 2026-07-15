@@ -121,6 +121,9 @@ async function create(req, res) {
       });
     }
     const targetClientId = (req.user.role === 'admin' && client_id) ? client_id : req.user.id;
+
+    const targetClientId = (req.user.role === 'admin' && client_id) ? client_id : req.user.id;
+
     const result = await createAppointment(
       {
         lawyer_id,
@@ -139,9 +142,9 @@ async function create(req, res) {
     const db = getDB();
     const [clientRows] = await db.execute(
       "SELECT name FROM users WHERE id = ?",
-   [targetClientId]
-);
-const clientName = clientRows[0]?.name ?? "A client";
+      [targetClientId]
+    );
+    const clientName = clientRows[0]?.name ?? "A client";
 
     //  ADDED: notify lawyer about new appointment request
     await createNotification({
