@@ -122,8 +122,6 @@ async function create(req, res) {
     }
     const targetClientId = (req.user.role === 'admin' && client_id) ? client_id : req.user.id;
 
-    const targetClientId = (req.user.role === 'admin' && client_id) ? client_id : req.user.id;
-
     const result = await createAppointment(
       {
         lawyer_id,
