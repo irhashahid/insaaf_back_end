@@ -2,13 +2,15 @@ const { getDB } = require("../config/db");
 
 async function getAllLawyers() {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM users");
+  const [rows] = await db.execute(
+    "SELECT * FROM users WHERE role = 'lawyer'"
+  );
   return rows;
 }
 
 async function getLawyerById(id) {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
+  const [rows] = await db.execute("SELECT * FROM users WHERE id = ? AND role = 'lawyer'", [id]);
   return rows;
 }
 
@@ -45,7 +47,7 @@ async function deleteLawyer(id) {
 async function setLawyerStatus(id, status) {
   const db = getDB();
   const [result] = await db.execute(
-    "UPDATE users SET status = ? WHERE id = ?",
+    "UPDATE users SET status = ? WHERE id = ? AND role = 'lawyer'",
     [status, id]
   );
   return result;
@@ -53,7 +55,7 @@ async function setLawyerStatus(id, status) {
 
 async function getApprovedLawyers() {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM users WHERE status = 1");
+  const [rows] = await db.execute("SELECT * FROM users WHERE status = 1 AND role = 'lawyer'");
   return rows;
 }
 

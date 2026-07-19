@@ -32,8 +32,33 @@ async function register(req, res) {
 
     const hash = await bcrypt.hash(password, 10);
     const result = await createUser(name, email, hash, role);
+    const userId = result.insertId;
 
-    res.status(201).json({ message: "User registered", userId: result.insertId });
+    // Update phone & location if provided
+    const { phone, location } = req.body;
+    if (phone || location) {
+      await updateBasicProfile(userId, {
+        name,
+        email,
+        phone: phone || null,
+        location: location || null,
+      });
+    }
+
+    // If lawyer, update lawyer specific fields & license path
+    if (role === "lawyer") {
+      const { specialization, category, experience } = req.body;
+      const licensePath = req.file ? req.file.path : null;
+      await updateUserProfile(userId, {
+        specialization: specialization || null,
+        category: category || null,
+        location: location || null,
+        experience: experience || null,
+        cases: null,
+        license: licensePath,
+      });
+    }
+    res.status(201).json({ message: "User registered", userId: userId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

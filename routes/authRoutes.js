@@ -4,38 +4,33 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const {
   register,
-  login,       
-  getClients,       
-  forgotPassword,    
+  login,
+  getClients,
+  forgotPassword,
   resetPassword,
   updateProfile,
   uploadLicense,
   editProfile,
-  changePassword,    
+  changePassword,
 } = require("../controllers/authControllers");
 
-router.post("/register", register);
+//  authntiction
+router.post("/register", upload.single("license"), register); // ← only this one
 router.post("/login", login);
 
-//  get clients 
-router.get("/all-clients", getClients);       // GET /clients.. by admin 
+// get cleints 
+router.get("/all-clients", getClients);
 
-// password reset 
-router.post("/forgot-password", forgotPassword);   // POST /forgot password.. email field required for test 
-router.post("/reset-password", resetPassword);     // POST /reset password... token, pass, confrm pass are reqrd
+// reset pass 
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
-// for profle updtion
-router.put("/update-profile", authMiddleware, updateProfile); // PUT /update profile.. users speicalization etc
-
-// add this route
-router.post("/upload-license", authMiddleware, upload.single("license"),  // "license" = field name in form-data
-  uploadLicense
-);
-
-// edit basic profile ( all users)
-router.put("/edit-profile", authMiddleware, editProfile); // PUT /edit profile
-
-// change password 
+// fr profile 
+router.put("/update-profile", authMiddleware, updateProfile);
+router.put("/edit-profile", authMiddleware, editProfile);
 router.put("/change-password", authMiddleware, changePassword);
+
+//  license upload 
+router.post("/upload-license", authMiddleware, upload.single("license"), uploadLicense);
 
 module.exports = router;
