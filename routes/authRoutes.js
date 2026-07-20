@@ -22,8 +22,8 @@ router.post("/login", login);
 router.get("/all-clients", getClients);
 
 // reset pass 
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post("/forgot-password", forgotPassword); //email field reqred fr test
+router.post("/reset-password", resetPassword); //... token, pass, confrm pass are reqrd
 
 // fr profile 
 router.put("/update-profile", authMiddleware, updateProfile);
