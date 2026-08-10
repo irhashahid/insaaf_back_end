@@ -3,17 +3,18 @@ const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/licenses/"); // folder where licenses will be saved
+    cb(null, "uploads/licenses/");
   },
   filename: function (req, file, cb) {
-    // filename: userId_timestamp.extension
     const ext = path.extname(file.originalname);
-    cb(null, `license_${req.user.id}_${Date.now()}${ext}`);
+    // CHANGED: use timestamp + random number instead of req.user.id
+    // req.user is undefined during registration since user isn't logged in yet
+    const uniqueName = `license_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, uniqueName);
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  // only allow PDF, JPG, PNG
   const allowed = [".pdf", ".jpg", ".jpeg", ".png"];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.includes(ext)) {
@@ -26,7 +27,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // max 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 module.exports = upload;
