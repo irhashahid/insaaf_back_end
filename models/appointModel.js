@@ -199,18 +199,21 @@ async function approvePayment(id, lawyerId) {
   return result;
 }
 // Convert an approved appointment into a case
-async function convertToCase(appointmentId) {
+async function convertToCase(appointmentId, userId, userRole) {
   const db = getDB();
 
   // 1. Get the appointment / must belong to this lawyer + payment approved
   const [appt] = await db.execute(
-    "SELECT * FROM appointments WHERE id = ?",
+    "SELECT * FROM appointments WHERE id = ? AND payment_status = 1",
     [appointmentId]
   );
 
   if (appt.length === 0) return null;
 
   const a = appt[0];
+  if (userRole !== 'admin' && a.lawyer_id !== userId) {
+    throw new Error('Not authorized to convert this appointment');
+  }
 
 
   // 2. Get client's name nd phn number from users table

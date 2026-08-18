@@ -1,7 +1,7 @@
 const upload = require("../config/multer");
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middleware/authMiddleware");
+const { authMiddleware, roleMiddleware } = require("../middleware/authMiddleware");
 const {
   register,
   login,
@@ -19,7 +19,7 @@ router.post("/register", upload.single("license"), register); // ← only this o
 router.post("/login", login);
 
 // get cleints 
-router.get("/all-clients", getClients);
+router.get("/all-clients", authMiddleware, roleMiddleware('admin'), getClients);
 
 // reset pass 
 router.post("/forgot-password", forgotPassword); //email field reqred fr test
