@@ -127,4 +127,25 @@ async function getSubscriptionStats(req, res) {
   }
 }
 
-module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription, getSubscriptionStats };
+async function revokeSubscription(req, res) {
+  try {
+    const { revokeLawyerSubscription } = require("../models/lawyerModel");
+    const result = await revokeLawyerSubscription(req.params.id);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Lawyer not found" });
+
+    await createNotification({
+      user_id: req.params.id,
+      title: "Subscription Revoked",
+      body: "Your lawyer account subscription has been revoked by admin.",
+      type: "account",
+      ref_id: null,
+    });
+
+    res.json({ message: "Subscription revoked successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription, revokeSubscription, getSubscriptionStats };

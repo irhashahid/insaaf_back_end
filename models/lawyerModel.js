@@ -81,6 +81,15 @@ async function renewLawyerSubscription(id) {
   return result;
 }
 
+async function revokeLawyerSubscription(id) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE users SET subscription_end_date = NULL, status = 0 WHERE id = ? AND role = 'lawyer'",
+    [id]
+  );
+  return result;
+}
+
 async function getSubscriptionStats() {
   const db = getDB();
   const [lawyers] = await db.execute("SELECT id, name, status, subscription_end_date FROM users WHERE role = 'lawyer'");
@@ -112,5 +121,6 @@ module.exports = {
   setLawyerStatus,
   getApprovedLawyers,
   renewLawyerSubscription,
+  revokeLawyerSubscription,
   getSubscriptionStats,
 };
