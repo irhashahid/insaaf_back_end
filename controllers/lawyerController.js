@@ -111,5 +111,20 @@ async function renewSubscription(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+async function getSubscriptionStats(req, res) {
+  try {
+    const stats = await require("../models/lawyerModel").getSubscriptionStats();
+    const totalRevenue = stats.activeCount * stats.subscriptionFee;
+    res.json({
+      activeCount: stats.activeCount,
+      expiredCount: stats.expiredCount,
+      totalRevenue,
+      fee: stats.subscriptionFee,
+      lawyers: stats.lawyers
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
-module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription };
+module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription, getSubscriptionStats };

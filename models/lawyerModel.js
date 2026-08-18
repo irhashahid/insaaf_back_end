@@ -81,6 +81,28 @@ async function renewLawyerSubscription(id) {
   return result;
 }
 
+async function getSubscriptionStats() {
+  const db = getDB();
+  const [lawyers] = await db.execute("SELECT id, name, status, subscription_end_date FROM users WHERE role = 'lawyer'");
+  
+  let activeCount = 0;
+  let expiredCount = 0;
+  const now = new Date();
+  
+  lawyers.forEach(lawyer => {
+    if (lawyer.subscription_end_date && new Date(lawyer.subscription_end_date) >= now) {
+      activeCount++;
+    } else {
+      expiredCount++;
+    }
+  });
+
+  const [settings] = await db.execute("SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'");
+  const subscriptionFee = settings.length > 0 ? parseFloat(settings[0].setting_value) : 0;
+
+  return { activeCount, expiredCount, subscriptionFee, lawyers };
+}
+
 module.exports = {
   getAllLawyers,
   getLawyerById,
@@ -90,4 +112,5 @@ module.exports = {
   setLawyerStatus,
   getApprovedLawyers,
   renewLawyerSubscription,
+  getSubscriptionStats,
 };
