@@ -14,7 +14,6 @@ const {
 } = require("../models/appointModel");
 
 
-const { findByEmail } = require("../models/userModel"); //role based access.ig its not using
 const { createNotification } = require("../models/notificationModel"); //  add for notify
 const { getDB } = require("../config/db"); //  ADDED — needed to look up client_id for notifications
 
@@ -114,13 +113,13 @@ async function create(req, res) {
       !slot_start_time ||
       !slot_end_time ||
       !appointment_mode ||
-      (req.user.role === 'admin' && !client_id)
+      (req.user.role === 'admin' && !clientId)
     ) {
       return res.status(400).json({
         error: "Required fields missing"
       });
     }
-    const targetClientId = (req.user.role === 'admin' && client_id) ? client_id : req.user.id;
+    const targetClientId = (req.user.role === 'admin' && clientId) ? clientId : req.user.id;
 
     const result = await createAppointment(
       {
@@ -168,9 +167,6 @@ async function create(req, res) {
 // PUT /appointments/:id
 async function update(req, res) {
   try {
-    console.log("params id:", req.params.id);
-    console.log("user:", req.user);
-    console.log("body:", req.body);
 
     const {
   lawyer_id,
@@ -356,8 +352,7 @@ if (appt.length > 0) {
 // only lawyer can convert, only after payment is approved 
 async function convertCase(req, res) {
   try {
-    const result = await convertToCase(req.params.id);
-    console.log("convertCase result:", req.params.id);
+    const result = await convertToCase(req.params.id, req.user.id, req.user.role);
     if (!result)
       return res.status(403).json({
         error: "Appointment not found, not yours, or payment not approved",

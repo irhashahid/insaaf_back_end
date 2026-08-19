@@ -50,7 +50,7 @@ async function update(req, res) {
 
 async function remove(req, res) {
   try {
-    const result = await deleteCase(req.params.id, req.user.id);
+    const result = await deleteCase(req.params.id);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Not found or not yours" });
     res.json({ message: "Deleted" });

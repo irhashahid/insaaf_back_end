@@ -2,12 +2,12 @@ const mysql = require("mysql2/promise");
 
 let db;
 
-async function initDB() {
+function initDB() {
   try {
-    db = await mysql.createConnection({
+    db = mysql.createPool({
       host: "localhost",
-      user: "root",
-      password: "",
+      user: "admin",
+      password: "YourStrongPassword",
       database: "insaaf_connect",
     });
     console.log("MySQL Connected");

@@ -17,7 +17,7 @@ const {
   findUserById,
  } = require("../models/userModel"); //  updated
 
-const JWT_SECRET = "your_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 async function register(req, res) {
   const { name, email, password, role } = req.body;

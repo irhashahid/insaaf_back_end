@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "your_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -21,4 +21,13 @@ function authMiddleware(req, res, next) {
   }
 }
 
-module.exports = authMiddleware;
+function roleMiddleware(...roles) {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+    next();
+  };
+}
+
+module.exports = { authMiddleware, roleMiddleware };
