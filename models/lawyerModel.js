@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 async function getAllLawyers() {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE role = 'lawyer'"
+    "SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE role = 'lawyer' LIMIT 3"
   );
   return rows;
 }
