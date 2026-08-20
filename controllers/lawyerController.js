@@ -86,7 +86,7 @@ async function updateStatus(req, res) {
 
 async function approved(req, res) {
   try {
-    res.json(await getApprovedLawyers());
+    res.json(await getApprovedLawyers(req.params.searchQuery));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

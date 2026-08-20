@@ -6,7 +6,7 @@ const {
 } = require("../controllers/lawyerController");
 
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
-router.get("/approved", authMiddleware, approved); //get all approved lawyers
+router.post("/approved", authMiddleware, approved); //get all approved lawyers
 router.get("/subscription-stats", authMiddleware, roleMiddleware('admin'), getSubscriptionStats);
 router.get("/", authMiddleware, roleMiddleware('admin'), index); //get all lawyers
 router.get("/:id", authMiddleware, show); //get lawyer by id

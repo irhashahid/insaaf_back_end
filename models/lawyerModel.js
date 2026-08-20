@@ -66,9 +66,25 @@ async function setLawyerStatus(id, status) {
   return result;
 }
 
-async function getApprovedLawyers() {
+async function getApprovedLawyers(searchQuery) {
   const db = getDB();
-  const [rows] = await db.execute("SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE status = 1 AND role = 'lawyer' LIMIT 4");
+  const search = `%${searchQuery}%`;
+
+  const [rows] = await db.execute(
+    `SELECT id, name, email, specialization, category, location, experience, cases,
+            status, subscription_end_date
+    FROM users
+    WHERE status = 1
+      AND role = 'lawyer'
+      AND (
+        name LIKE ?
+        OR specialization LIKE ?
+        OR category LIKE ?
+        OR location LIKE ?
+      )
+    LIMIT 4`,
+    [search, search, search, search]
+  );
   return rows;
 }
 
