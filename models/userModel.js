@@ -56,19 +56,25 @@ async function getAllClients() {
 async function getAllLawyers() {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT id, name, email, specialization, category, location, experience, cases, status FROM users WHERE role = 'lawyer'"
+    "SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date, license, profile_pic FROM users WHERE role = 'lawyer'"
   );
   return rows;
 }
 
-// Update lawyer profile including specialization and category
-async function updateUserProfile(userId, { specialization, category, location, experience, cases, license }) {
+// Update lawyer profile including specialization, category, license, profile_pic
+async function updateUserProfile(userId, { specialization, category, location, experience, cases, license, profile_pic }) {
   const db = getDB();
   const [result] = await db.execute(
     `UPDATE users 
-     SET specialization = ?, category = ?, location = ?, experience = ?, cases = ?, license = ?
+     SET specialization = COALESCE(?, specialization), 
+         category = COALESCE(?, category), 
+         location = COALESCE(?, location), 
+         experience = COALESCE(?, experience), 
+         cases = COALESCE(?, cases), 
+         license = COALESCE(?, license), 
+         profile_pic = COALESCE(?, profile_pic)
      WHERE id = ?`,
-    [specialization, category, location, experience, cases, license, userId]
+    [specialization, category, location, experience, cases, license, profile_pic, userId]
   );
   return result;
 }
@@ -82,14 +88,25 @@ async function saveLicense(userId, licensePath) {
   );
   return result;
 }
+
+// Save profile pic file path to user
+async function saveProfilePic(userId, profilePicPath) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE users SET profile_pic = ? WHERE id = ?",
+    [profilePicPath, userId]
+  );
+  return result;
+}
+
 // Update basic profile for any usr (client, lawyer, admin)
-async function updateBasicProfile(userId, { name, email, phone, location }) {
+async function updateBasicProfile(userId, { name, email, phone, location, profile_pic }) {
   const db = getDB();
   const [result] = await db.execute(
     `UPDATE users 
-     SET name = ?, email = ?, phone = ?, location = ?
+     SET name = ?, email = ?, phone = ?, location = ?, profile_pic = COALESCE(?, profile_pic)
      WHERE id = ?`,
-    [name, email, phone, location, userId]
+    [name, email, phone, location, profile_pic || null, userId]
   );
   return result;
 }

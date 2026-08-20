@@ -1,15 +1,21 @@
 const multer = require("multer");
 const path = require("path");
 
+const fs = require("fs");
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/licenses/");
+    let dir = "uploads/licenses/";
+    if (file.fieldname === "profile_pic") {
+      dir = "uploads/profiles/";
+    }
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    // CHANGED: use timestamp + random number instead of req.user.id
-    // req.user is undefined during registration since user isn't logged in yet
-    const uniqueName = `license_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
+    const prefix = file.fieldname === "profile_pic" ? "profile" : "license";
+    const uniqueName = `${prefix}_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
     cb(null, uniqueName);
   },
 });
