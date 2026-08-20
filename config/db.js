@@ -2,7 +2,7 @@ const mysql = require("mysql2/promise");
 
 let db;
 
-function initDB() {
+async function initDB() {
   try {
     db = mysql.createPool({
       host: "localhost",

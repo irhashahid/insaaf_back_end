@@ -12,6 +12,7 @@ const conversationRoutes = require("./routes/conversationRoutes");
 const messageRoutes = require("./routes/messageRoutes");       // add
 const ratingRoutes = require("./routes/ratingRoutes");  
 const notificationRoutes = require("./routes/notificationRoutes"); // add
+const settingRoutes = require("./routes/settingRoutes"); 
 
 const app = express();
 app.use(cors());
@@ -26,6 +27,7 @@ app.use("/appointments", appointRoutes);
 app.use("/conversations", conversationRoutes);
 app.use("/messages", messageRoutes);
 app.use("/ratings", ratingRoutes); 
+app.use("/settings", settingRoutes);
 
 initDB().then(() => {
   app.listen(3000, () => {

@@ -4,22 +4,11 @@ async function getAllCases() {
   const db = getDB();
 
   const [rows] = await db.execute(`
-    SELECT 
-      id,
-      case_type,
-      name,
-      description_case,
-      client_id,
-      lawyer_id,
-      admin_id,
-      phone,
-      address,
-      case_status,
-      case_start_date,
-      depart_concern,
-      hearing_date,
-      payment_status
-    FROM cases
+    SELECT c.id, c.case_type, c.name, c.description_case, c.client_id, c.lawyer_id, c.admin_id, c.phone, c.address, c.case_status, c.case_start_date, c.depart_concern, c.hearing_date, c.payment_status,
+     cl.name as client_name, lw.name as lawyer_name
+     FROM cases c
+     LEFT JOIN users cl ON c.client_id = cl.id
+     LEFT JOIN users lw ON c.lawyer_id = lw.id
   `);
 
   return rows;
@@ -90,7 +79,12 @@ async function setCaseStatus(id, status) {
 async function getApprovedCases() {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT * FROM cases WHERE case_status = 'approved'"
+    `SELECT c.id, c.case_type, c.name, c.description_case, c.client_id, c.lawyer_id, c.admin_id, c.phone, c.address, c.case_status, c.case_start_date, c.depart_concern, c.hearing_date, c.payment_status,
+     cl.name as client_name, lw.name as lawyer_name
+     FROM cases c
+     LEFT JOIN users cl ON c.client_id = cl.id
+     LEFT JOIN users lw ON c.lawyer_id = lw.id
+     WHERE c.case_status = 'approved'`
   );
   return rows;
 }
@@ -98,7 +92,12 @@ async function getApprovedCases() {
 async function getCasesByClient(clientId) {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT * FROM cases WHERE client_id = ?",
+    `SELECT c.id, c.case_type, c.name, c.description_case, c.client_id, c.lawyer_id, c.admin_id, c.phone, c.address, c.case_status, c.case_start_date, c.depart_concern, c.hearing_date, c.payment_status,
+     cl.name as client_name, lw.name as lawyer_name
+     FROM cases c
+     LEFT JOIN users cl ON c.client_id = cl.id
+     LEFT JOIN users lw ON c.lawyer_id = lw.id
+     WHERE c.client_id = ?`,
     [clientId]
   );
   return rows;
@@ -108,7 +107,12 @@ async function getCasesByClient(clientId) {
 async function getCasesByLawyer(lawyerId) {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT * FROM cases WHERE lawyer_id = ?",
+    `SELECT c.id, c.case_type, c.name, c.description_case, c.client_id, c.lawyer_id, c.admin_id, c.phone, c.address, c.case_status, c.case_start_date, c.depart_concern, c.hearing_date, c.payment_status,
+     cl.name as client_name, lw.name as lawyer_name
+     FROM cases c
+     LEFT JOIN users cl ON c.client_id = cl.id
+     LEFT JOIN users lw ON c.lawyer_id = lw.id
+     WHERE c.lawyer_id = ?`,
     [lawyerId]
   );
   return rows;

@@ -21,13 +21,5 @@ function authMiddleware(req, res, next) {
   }
 }
 
-function roleMiddleware(...roles) {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ error: "Access denied" });
-    }
-    next();
-  };
-}
 
-module.exports = { authMiddleware, roleMiddleware };
+module.exports = authMiddleware;
