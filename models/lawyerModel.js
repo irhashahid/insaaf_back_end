@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 async function getAllLawyers() {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE role = 'lawyer' LIMIT 3"
+    "SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE role = 'lawyer'"
   );
   return rows;
 }
@@ -68,7 +68,7 @@ async function setLawyerStatus(id, status) {
 
 async function getApprovedLawyers() {
   const db = getDB();
-  const [rows] = await db.execute("SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE status = 1 AND role = 'lawyer'");
+  const [rows] = await db.execute("SELECT id, name, email, specialization, category, location, experience, cases, status, subscription_end_date FROM users WHERE status = 1 AND role = 'lawyer' LIMIT 4");
   return rows;
 }
 
