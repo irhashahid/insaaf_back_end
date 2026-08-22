@@ -70,4 +70,4 @@ async function create(req, res) {
 }
 
 
-module.exports = { index, show, byClient, byLawyer, create, myConversations }; 
+module.exports = { index, show, byClient, byLawyer, create, myConversations };
