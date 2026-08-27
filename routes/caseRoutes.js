@@ -9,8 +9,8 @@ const { getLawyers, getClients } = require("../controllers/authControllers"); //
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
 router.get("/mine", authMiddleware, myCases);  // GET /cases/mine........ role based API
 router.get("/approved", authMiddleware, approved); //get krne approved cases
-router.get("/lawyers", getLawyers);      //  get all lawyers
-router.get("/clients", getClients);      // get all clients
+router.get("/lawyers", authMiddleware, getLawyers);      //  get all lawyers
+router.get("/clients", authMiddleware, getClients);      // get all clients
 router.get("/", authMiddleware, index); // is sey sb case ayeingy 
 router.get("/:id", authMiddleware, show); // bs single case ayeeiga
 router.post("/",authMiddleware, create); // create new case

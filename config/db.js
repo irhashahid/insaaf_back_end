@@ -6,8 +6,8 @@ async function initDB() {
   try {
     db = mysql.createPool({
       host: "localhost",
-      user: "admin",
-      password: "YourStrongPassword",
+      user: "root",
+      password: "",
       database: "insaaf_connect",
     });
     console.log("MySQL Connected");
