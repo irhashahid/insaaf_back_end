@@ -1,3 +1,4 @@
+const { getDB } = require("../config/db");
 const {
   getMessagesByConversation,
   getMessageById,
@@ -44,14 +45,21 @@ async function create(req, res) {
       message,
     });
 
-    // ADDED: notify receiver about new message
-    await createNotification({
-      user_id: receiver_id,
-      title: "New Message",
-      body: "You have received a new message",
-      type: "message",
-      ref_id: conversation_id,
-    });
+// fetch sndr nme fr prsnalized notfition
+const db = getDB();
+const [senderRows] = await db.execute(
+  "SELECT name FROM users WHERE id = ?", [req.user.id]
+);
+const senderName = senderRows[0]?.name ?? "Someone";
+
+// notify receiver about new message
+await createNotification({
+  user_id: receiver_id,
+  title: "New Message",
+  body: `${senderName} sent you a message`,
+  type: "message",
+  ref_id: conversation_id,
+});
 
     res.status(201).json({ message: "Message sent", id: result.insertId });
   } catch (err) {

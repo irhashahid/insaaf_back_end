@@ -59,6 +59,49 @@ async function getApprovedLawyers() {
   return rows;
 }
 
+// Renew lawyer subscription by 30 days
+async function renewLawyerSubscription(id) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `UPDATE users 
+     SET subscription_expiry = DATE_ADD(IFNULL(subscription_expiry, NOW()), INTERVAL 30 DAY)
+     WHERE id = ? AND role = 'lawyer'`,
+    [id]
+  );
+  return result;
+}
+
+// Revoke lawyer subscription
+async function revokeLawyerSubscription(id) {
+  const db = getDB();
+  const [result] = await db.execute(
+    "UPDATE users SET subscription_expiry = NOW() WHERE id = ? AND role = 'lawyer'",
+    [id]
+  );
+  return result;
+}
+
+// Get subscription stats for admin
+async function getSubscriptionStats() {
+  const db = getDB();
+  const db2 = getDB();
+
+  const [lawyers] = await db.execute(
+    "SELECT id, name, email, subscription_expiry FROM users WHERE role = 'lawyer'"
+  );
+
+  const [settings] = await db2.execute(
+    "SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'"
+  );
+
+  const now = new Date();
+  const activeCount = lawyers.filter(l => l.subscription_expiry && new Date(l.subscription_expiry) > now).length;
+  const expiredCount = lawyers.length - activeCount;
+  const subscriptionFee = settings[0]?.setting_value ?? 0;
+
+  return { activeCount, expiredCount, subscriptionFee, lawyers };
+}
+
 module.exports = {
   getAllLawyers,
   getLawyerById,
@@ -67,4 +110,7 @@ module.exports = {
   deleteLawyer,
   setLawyerStatus,
   getApprovedLawyers,
+  renewLawyerSubscription,
+  revokeLawyerSubscription,
+  getSubscriptionStats
 };
