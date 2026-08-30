@@ -84,22 +84,26 @@ async function revokeLawyerSubscription(id) {
 // Get subscription stats for admin
 async function getSubscriptionStats() {
   const db = getDB();
-  const db2 = getDB();
 
   const [lawyers] = await db.execute(
     "SELECT id, name, email, subscription_expiry FROM users WHERE role = 'lawyer'"
   );
 
-  const [settings] = await db2.execute(
+  const [settings] = await db.execute(
     "SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'"
   );
 
   const now = new Date();
+
   const activeCount = lawyers.filter(l => l.subscription_expiry && new Date(l.subscription_expiry) > now).length;
   const expiredCount = lawyers.length - activeCount;
   const subscriptionFee = settings[0]?.setting_value ?? 0;
 
-  return { activeCount, expiredCount, subscriptionFee, lawyers };
+  return { 
+    activeCount,
+    expiredCount,
+    subscriptionFee,
+    lawyers };
 }
 
 module.exports = {

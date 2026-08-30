@@ -7,6 +7,8 @@ const {
   setLawyerStatus,
   getApprovedLawyers,
   renewLawyerSubscription,
+  revokeLawyerSubscription,
+  getSubscriptionStats,
 } = require("../models/lawyerModel");
 
 const { createNotification } = require("../models/notificationModel"); //  ADDED for notify
@@ -111,9 +113,9 @@ async function renewSubscription(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-async function getSubscriptionStats(req, res) {
+async function SubscriptionStats(req, res) {
   try {
-    const stats = await require("../models/lawyerModel").getSubscriptionStats();
+    const stats = await getSubscriptionStats(); // this now callss the model fntion
     const totalRevenue = stats.activeCount * stats.subscriptionFee;
     res.json({
       activeCount: stats.activeCount,
@@ -129,7 +131,6 @@ async function getSubscriptionStats(req, res) {
 
 async function revokeSubscription(req, res) {
   try {
-    const { revokeLawyerSubscription } = require("../models/lawyerModel");
     const result = await revokeLawyerSubscription(req.params.id);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Lawyer not found" });
@@ -148,4 +149,4 @@ async function revokeSubscription(req, res) {
   }
 }
 
-module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription, revokeSubscription, getSubscriptionStats };
+module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription, revokeSubscription, SubscriptionStats };
