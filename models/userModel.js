@@ -68,7 +68,15 @@ async function updateUserProfile(userId, { specialization, category, location, e
     `UPDATE users 
      SET specialization = ?, category = ?, location = ?, experience = ?, cases = ?, license = ?
      WHERE id = ?`,
-    [specialization, category, location, experience, cases, license, userId]
+    [
+      specialization ?? null,
+      category ?? null,
+      location ?? null,
+      experience ?? null,
+      cases ?? null,
+      license ?? null,
+      userId
+    ]
   );
   return result;
 }

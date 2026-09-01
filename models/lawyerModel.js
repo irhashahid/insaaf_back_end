@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const { getDB } = require("../config/db");
 
 async function getAllLawyers() {
@@ -16,10 +17,11 @@ async function getLawyerById(id) {
 
 async function createLawyer({ name, email, password, specialization, location, experience, cases }) {
   const db = getDB();
+  const hashedPassword = await bcrypt.hash(password, 10);
   const [result] = await db.execute(
     `INSERT INTO users (name, email, password, specialization, location, experience, cases, status, role)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [name, email, password, specialization, location, experience, cases, 1, 'lawyer']
+    [name, email, hashedPassword, specialization, location, experience, cases, 1, 'lawyer']
   );
   return result;
 }
@@ -97,7 +99,7 @@ async function getSubscriptionStats() {
 
   const activeCount = lawyers.filter(l => l.subscription_expiry && new Date(l.subscription_expiry) > now).length;
   const expiredCount = lawyers.length - activeCount;
-  const subscriptionFee = settings[0]?.setting_value ?? 0;
+  const subscriptionFee = settings.length > 0 ? settings[0].setting_value : 0;
 
   return { 
     activeCount,

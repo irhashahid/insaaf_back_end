@@ -167,12 +167,21 @@ async function deleteAppointment(id, clientId) {
 async function setAppointmentStatus(id, payment_amount, status) {
   const db = getDB();
 
-  const [result] = await db.execute(
-    "UPDATE appointments SET status=?, payment_amount=? WHERE id=?",
-    [status, payment_amount, id]
-  );
-  return result;
+  if (payment_amount !== undefined && payment_amount !== null) {
+    const [result] = await db.execute(
+      "UPDATE appointments SET status=?, payment_amount=? WHERE id=?",
+      [status, payment_amount, id]
+    );
+    return result;
+  } else {
+    const [result] = await db.execute(
+      "UPDATE appointments SET status=? WHERE id=?",
+      [status, id]
+    );
+    return result;
+  }
 }
+
 
 // Client submits payment — cash or online with receipt
 async function submitPayment(id, clientId, payment_mode, payment_receipt) {

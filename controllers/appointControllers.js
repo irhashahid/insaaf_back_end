@@ -269,11 +269,11 @@ async function pay(req, res) {
     const { payment_mode, payment_receipt } = req.body;
 
     if (!payment_mode)
-      return res.status(400).json({ error: "payment_mode required: Stripe | Manual" });
+  return res.status(400).json({ error: "payment_mode required: Pay Online | Pay in Cash" });
 
-    const allowed = ["Manual"];
-    if (!allowed.includes(payment_mode))
-      return res.status(400).json({ error: "payment_mode must be Stripe or Manual" });
+    const allowed = ["Pay Online", "Pay in Cash"];
+if (!allowed.includes(payment_mode))
+  return res.status(400).json({ error: "payment_mode must be Pay Online or Pay in Cash" });
 
     const result = await submitPayment(
       req.params.id,
