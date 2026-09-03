@@ -134,7 +134,7 @@ async function forgotPassword(req, res) {
 
     await saveResetToken(email, token, expiry);
 
-    const resetLink = `http://insaaf.sandbox.pk/reset-password?token=${token}`;
+    const resetLink = `http://insaaf.sandbox.pk/#/reset-password?token=${token}`;
 
     await transporter.sendMail({
       from: `"Insaaf Connect" <${process.env.MAIL_USER}>`,
@@ -160,6 +160,7 @@ async function forgotPassword(req, res) {
 
     res.json({ message: "Password reset link sent to your email" });
   } catch (err) {
+    console.error("Error sending reset link:", err);
     res.status(500).json({ error: err.message });
   }
 }

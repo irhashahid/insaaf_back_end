@@ -71,11 +71,12 @@ async function updateStatus(req, res) {
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Lawyer not found" });
 
+    const statusLabel = req.params.status == 1 ? "Approved" : "Rejected";
     // ADDED: notify lawyer their approval status changed
     await createNotification({
       user_id: req.params.id,
-      title: `Account ${req.params.status}`,
-      body: `Your lawyer account has been ${req.params.status.toLowerCase()} by admin`,
+      title: `Account ${statusLabel}`,
+      body: `Your lawyer account has been ${statusLabel.toLowerCase()} by admin`,
       type: "account",
       ref_id: null,
     });
