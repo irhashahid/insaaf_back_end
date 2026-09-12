@@ -12,6 +12,7 @@ const {
   uploadLicense,
   editProfile,
   changePassword,
+  getLawyerLicenses,
 } = require("../controllers/authControllers");
 
 //  authntiction
@@ -32,5 +33,8 @@ router.put("/change-password", authMiddleware, changePassword);
 
 //  license upload 
 router.post("/upload-license", authMiddleware, upload.single("license"), uploadLicense);
+
+// GET /lawyer-licenses — admin linse page
+router.get("/lawyer-licenses", authMiddleware, getLawyerLicenses); //whn ive to test it yha pe maien lawyer-licenses k saath hi test krni addition lawyers/ nhi lagana 
 
 module.exports = router;

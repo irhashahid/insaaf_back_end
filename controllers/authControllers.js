@@ -2,7 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");  //  ADD for frgot passwrd
 const transporter = require("../config/mailer");  //  ADD for frgot passwrd process
-
+const { createNotification } = require("../models/notificationModel"); // added for notifiations
+const { getDB } = require("../config/db");
 const { 
   findByEmail,
   createUser,
@@ -15,6 +16,7 @@ const {
   saveLicense,
   updateBasicProfile,
   findUserById,
+  getAllLawyersWithLicenses,
  } = require("../models/userModel"); //  updated
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
@@ -57,7 +59,22 @@ async function register(req, res) {
         cases: null,
         license: licensePath,
       });
+      // ← ADD HERE — notify admin when new lawyer registers
+      const db = getDB();
+      const [admins] = await db.execute(
+        "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+      );
+      if (admins.length > 0) {
+        await createNotification({
+          user_id: admins[0].id,
+          title: "New Lawyer Registration",
+          body: `${name} has registered and is waiting for approval`,
+          type: "account",
+          ref_id: userId,
+        });
+      }
     }
+  
     res.status(201).json({ message: "User registered", userId: userId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -310,4 +327,15 @@ async function changePassword(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense, editProfile, changePassword }; 
+
+// GET /lawyer-licenses — admin only
+async function getLawyerLicenses(req, res) {
+  try {
+    const lawyers = await getAllLawyersWithLicenses();
+    res.status(200).json({ success: true, data: lawyers });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { register, login,  getClients, getLawyers, forgotPassword, resetPassword, updateProfile, uploadLicense, editProfile, changePassword, getLawyerLicenses, }; 

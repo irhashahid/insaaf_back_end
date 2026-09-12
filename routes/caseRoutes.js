@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const {
-  index, show, create, update, remove, updateStatus, approved, myCases,
+  index, show, create, update, remove, updateStatus, approved, myCases, adminStats,
 } = require("../controllers/caseControllers");
 const { getLawyers, getClients } = require("../controllers/authControllers"); //  new
 
@@ -11,6 +11,8 @@ router.get("/mine", authMiddleware, myCases);  // GET /cases/mine........ role b
 router.get("/approved", authMiddleware, approved); //get krne approved cases
 router.get("/lawyers", authMiddleware, getLawyers);      //  get all lawyers
 router.get("/clients", authMiddleware, getClients);      // get all clients
+router.get("/admin-stats", authMiddleware, adminStats);  // GET /cases/admin-stats    ..admin dashboard monthly stats
+
 router.get("/", authMiddleware, index); // is sey sb case ayeingy 
 router.get("/:id", authMiddleware, show); // bs single case ayeeiga
 router.post("/",authMiddleware, create); // create new case

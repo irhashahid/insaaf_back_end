@@ -49,8 +49,8 @@ async function myNotifications(req, res) {
     let unread;
 
     if (role === "admin") {
-      notifications = await getAllNotifications();
-      const count = await getTotalUnreadCount();
+      notifications = await getAllNotifications(id);
+      const count = await getTotalUnreadCount(id);
       unread = count.unread;
     } else {
 // client and lawyer both get only their own

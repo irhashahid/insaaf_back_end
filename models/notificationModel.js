@@ -6,7 +6,8 @@ async function getNotificationsByUser(userId) {
   const [rows] = await db.execute(
     `SELECT * FROM notifications 
      WHERE user_id = ? 
-     ORDER BY created_at DESC`,
+     ORDER BY created_at DESC
+     LIMIT 30`,  // limit to last 30 notifications
     [userId]
   );
   return rows;
@@ -53,11 +54,15 @@ async function markAllRead(userId) {
   return result;
 }
 
-// GET all notifications (for admin)
-async function getAllNotifications() {
+// GET all notifictns (fr admin) — only notfctions WHERE user_id = admn's id
+async function getAllNotifications(adminId) {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT * FROM notifications ORDER BY created_at DESC"
+    `SELECT * FROM notifications 
+     WHERE user_id = ? AND type = 'account'
+     ORDER BY created_at DESC
+     LIMIT 30`,
+    [adminId]  //  only notifications sent to this admin
   );
   return rows;
 }

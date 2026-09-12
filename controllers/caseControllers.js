@@ -7,7 +7,8 @@ const {
   setCaseStatus,
   getApprovedCases,
   getCasesByClient,  //  add for role 
-  getCasesByLawyer,  //  add for role 
+  getCasesByLawyer,  //  add for role
+  getAdminStats,  //  add for admin dashboard 
 } = require("../models/caseModel");
 
 async function index(req, res) {
@@ -131,4 +132,13 @@ async function myCases(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-module.exports = { index, show, create, update, remove, updateStatus, approved, myCases };
+// GET /cases/admin-stats    ..admin dashboard monthly stats
+async function adminStats(req, res) {
+  try {
+    res.json(await getAdminStats());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { index, show, create, update, remove, updateStatus, approved, myCases, adminStats, };

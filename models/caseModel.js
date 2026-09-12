@@ -118,6 +118,60 @@ async function getCasesByLawyer(lawyerId) {
   return rows;
 }
 
+// Admin dashboard stats
+async function getAdminStats() {
+  const db = getDB();
+
+  // total earnings (all time)
+  const [totalEarnings] = await db.execute(
+    "SELECT COALESCE(SUM(payment_amount), 0) AS total FROM appointments WHERE payment_status = 1"
+  );
+
+  // monthly earnings (current month)
+  const [monthlyEarnings] = await db.execute(
+    `SELECT COALESCE(SUM(payment_amount), 0) AS monthly 
+     FROM appointments 
+     WHERE payment_status = 1 
+     AND MONTH(created_at) = MONTH(NOW()) 
+     AND YEAR(created_at) = YEAR(NOW())`
+  );
+
+  // total payments count
+  const [totalPayments] = await db.execute(
+    "SELECT COUNT(*) AS count FROM appointments WHERE payment_status = 1"
+  );
+
+  // total cases
+  const [totalCases] = await db.execute(
+    "SELECT COUNT(*) AS count FROM cases"
+  );
+
+  // total lawyers
+  const [totalLawyers] = await db.execute(
+    "SELECT COUNT(*) AS count FROM users WHERE role = 'lawyer'"
+  );
+
+  // pending lawyers
+  const [pendingLawyers] = await db.execute(
+    "SELECT COUNT(*) AS count FROM users WHERE role = 'lawyer' AND status = 0"
+  );
+
+  // total clients
+  const [totalClients] = await db.execute(
+    "SELECT COUNT(*) AS count FROM users WHERE role = 'client'"
+  );
+
+  return {
+    total_earnings: totalEarnings[0].total,
+    monthly_earnings: monthlyEarnings[0].monthly,
+    total_payments: totalPayments[0].count,
+    total_cases: totalCases[0].count,
+    total_lawyers: totalLawyers[0].count,
+    pending_lawyers: pendingLawyers[0].count,
+    total_clients: totalClients[0].count,
+  };
+}
+
 module.exports = {
   getAllCases,
   getCaseById,
@@ -127,5 +181,6 @@ module.exports = {
   setCaseStatus,
   getApprovedCases,
   getCasesByClient,
-  getCasesByLawyer
+  getCasesByLawyer,
+  getAdminStats, // admn dashbrd mnthly stats
 };

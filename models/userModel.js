@@ -112,4 +112,17 @@ async function findUserById(userId) {
   return rows;
 }
 
-module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, updateBasicProfile, findUserById };
+// GET all lawyers with their license info for admin
+async function getAllLawyersWithLicenses() {
+  const db = getDB();
+  const [rows] = await db.execute(
+    `SELECT id, name, email, specialization, category, 
+            location, experience, status, license 
+     FROM users 
+     WHERE role = 'lawyer'
+     ORDER BY id DESC`
+  );
+  return rows;
+}
+
+module.exports = { findByEmail, saveResetToken, findByResetToken, updatePasswordAndClearToken, createUser, getAllClients, getAllLawyers, updateUserProfile, saveLicense, updateBasicProfile, findUserById, getAllLawyersWithLicenses, };
