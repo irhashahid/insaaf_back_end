@@ -1,3 +1,4 @@
+const { submitPayment } = require("../models/appointModel");
 const {
   getAllLawyers,
   getLawyerById,
@@ -7,12 +8,14 @@ const {
   setLawyerStatus,
   getApprovedLawyers,
   renewLawyerSubscription,
+  submitSubscriptionPayment,
   revokeLawyerSubscription,
   getSubscriptionStats,
+  getSubscriptionRecords,
 } = require("../models/lawyerModel");
 
 const { createNotification } = require("../models/notificationModel"); //  ADDED for notify
-
+const { getDB } = require("../config/db");
 async function index(req, res) {
   try {
     res.json(await getAllLawyers());
@@ -150,4 +153,80 @@ async function revokeSubscription(req, res) {
   }
 }
 
-module.exports = { index, show, create, update, remove, updateStatus, approved, renewSubscription, revokeSubscription, SubscriptionStats };
+async function subscriptionRecords(req, res) {
+  try {
+    const records = await getSubscriptionRecords();
+    res.json(records);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+async function submitSubscription(req, res) {
+  try {
+    const { transaction_id, payment_receipt, payment_method } = req.body;
+
+    // Get fee from settings
+    const db = getDB();
+    let fee = 2000;
+    try {
+      const [settings] = await db.execute(
+        "SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'"
+      );
+      if (settings.length > 0) fee = parseFloat(settings[0].setting_value) || 2000;
+    } catch (e) {}
+
+    const result = await submitSubscriptionPayment(req.user.id, {
+      amount: fee,
+      payment_method: payment_method || 'JazzCash',
+      transaction_id,
+      payment_receipt,
+    });
+
+    // Notify all admins
+    try {
+      const [adminRows] = await db.execute(
+        "SELECT id FROM users WHERE role = 'admin'"
+      );
+      const [lawyerRows] = await db.execute(
+        "SELECT name FROM users WHERE id = ?",
+        [req.user.id]
+      );
+      const lawyerName = lawyerRows[0]?.name ?? "A lawyer";
+
+      for (const admin of adminRows) {
+        await createNotification({
+          user_id: admin.id,
+          title: "Subscription Payment Submitted",
+          body: `${lawyerName} has submitted subscription payment proof for review`,
+          type: "payment",
+          ref_id: result.insertId,
+        });
+      }
+    } catch (notifErr) {
+      console.warn("Could not dispatch notification to admin:", notifErr.message);
+    }
+
+    res.status(201).json({
+      message: "Subscription payment proof submitted successfully. Waiting for admin approval.",
+      id: result.insertId,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { 
+  index, 
+  show, 
+  create, 
+  update, 
+  remove, 
+  updateStatus, 
+  approved, 
+  renewSubscription, 
+  revokeSubscription, 
+  SubscriptionStats,
+  subscriptionRecords,
+  submitSubscription
+};

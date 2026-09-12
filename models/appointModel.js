@@ -51,14 +51,18 @@ async function getAppointmentsByClient(clientId) {
   const db = getDB();
   const [rows] = await db.execute(`
     SELECT 
-    a.*,
+      a.*,
       client.name AS client_name,
       client.email AS client_email,
       lawyer.name AS lawyer_name,
-      lawyer.email AS lawyer_email
+      lawyer.email AS lawyer_email,
+      r.rating AS client_rating,
+      r.review AS client_review,
+      r.id AS rating_id
     FROM appointments a
     JOIN users client ON a.client_id = client.id
     JOIN users lawyer ON a.lawyer_id = lawyer.id
+    LEFT JOIN ratings r ON a.id = r.appointment_id
     WHERE a.client_id = ?
   `, [clientId]);
   
@@ -137,25 +141,43 @@ async function updateAppointment(
     short_description,
     slot_start_time,
     slot_end_time,
-  appointment_mode
+    appointment_mode
    },
   id,
-  clientId
+  clientId,
+  role
 ) {
   const db = getDB();
+  if (role === 'admin') {
+    const [result] = await db.execute(
+      `UPDATE appointments 
+       SET
+         lawyer_id=?, date=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?
+       WHERE id=?`,
+      [lawyer_id, date, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, id]
+    );
+    return result;
+  }
   const [result] = await db.execute(
     `UPDATE appointments 
      SET
        lawyer_id=?, date=?, law_type=?, case_type=?, short_description=?, slot_start_time=?, slot_end_time=?, appointment_mode=?
      WHERE id=? AND client_id=?`,
-    [lawyer_id, date, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode,  id, clientId]
+    [lawyer_id, date, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode, id, clientId]
   );
   return result;
 }
 
-// matches: id + client_id (only delete your own)
-async function deleteAppointment(id, clientId) {
+// matches: id + client_id (admin can delete any, client only their own)
+async function deleteAppointment(id, clientId, role) {
   const db = getDB();
+  if (role === 'admin') {
+    const [result] = await db.execute(
+      "DELETE FROM appointments WHERE id=?",
+      [id]
+    );
+    return result;
+  }
   const [result] = await db.execute(
     "DELETE FROM appointments WHERE id=? AND client_id=?",
     [id, clientId]

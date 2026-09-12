@@ -88,8 +88,8 @@ async function myAppointments(req, res) {
 async function create(req, res) {
   try {
 
+    const effectiveClientId = req.body.clientId || req.body.client_id;
     const {
-      clientId, // for admin booking on behalf of client .. mr
       lawyer_id,
       date,
       law_type,
@@ -103,23 +103,25 @@ async function create(req, res) {
       payment_receipt
     } = req.body;
 
-    // required fields
-    if (
-      !lawyer_id ||
-      !date ||
-      !law_type ||
-      !case_type ||
-      !short_description ||
-      !slot_start_time ||
-      !slot_end_time ||
-      !appointment_mode ||
-      (req.user.role === 'admin' && !clientId)
-    ) {
+    // required fields validation
+    const missing = [];
+    if (!lawyer_id) missing.push("lawyer_id");
+    if (!date) missing.push("date");
+    if (!law_type) missing.push("law_type");
+    if (!case_type) missing.push("case_type");
+    if (!short_description) missing.push("short_description");
+    if (!slot_start_time) missing.push("slot_start_time");
+    if (!slot_end_time) missing.push("slot_end_time");
+    if (!appointment_mode) missing.push("appointment_mode");
+    if (req.user.role === 'admin' && !effectiveClientId) missing.push("client_id");
+
+    if (missing.length > 0) {
       return res.status(400).json({
-        error: "Required fields missing"
+        error: `Required fields missing: ${missing.join(", ")}`
       });
     }
-    const targetClientId = (req.user.role === 'admin' && clientId) ? clientId : req.user.id;
+
+    const targetClientId = (req.user.role === 'admin' && effectiveClientId) ? effectiveClientId : req.user.id;
 
     const result = await createAppointment(
       {
@@ -135,22 +137,26 @@ async function create(req, res) {
       targetClientId
     );
 
-    // fetch client name for personalized notifiyy
-    const db = getDB();
-    const [clientRows] = await db.execute(
-      "SELECT name FROM users WHERE id = ?",
-      [targetClientId]
-    );
-    const clientName = clientRows[0]?.name ?? "A client";
+    // fetch client name for personalized notification
+    try {
+      const db = getDB();
+      const [clientRows] = await db.execute(
+        "SELECT name FROM users WHERE id = ?",
+        [targetClientId]
+      );
+      const clientName = clientRows[0]?.name ?? "A client";
 
-    //  ADDED: notify lawyer about new appointment request
-    await createNotification({
-      user_id: lawyer_id,
-      title: "New Appointment Request",
-      body: `${clientName} has booked an appointment with you`,
-      type: "appointment",
-      ref_id: result.insertId,
-    });
+      // notify lawyer about new appointment request
+      await createNotification({
+        user_id: lawyer_id,
+        title: "New Appointment Request",
+        body: `${clientName} has booked an appointment with you`,
+        type: "appointment",
+        ref_id: result.insertId,
+      });
+    } catch (notifErr) {
+      console.warn("Could not dispatch appointment notification:", notifErr.message);
+    }
 
     res.status(201).json({
       message: "Appointment created",
@@ -167,21 +173,22 @@ async function create(req, res) {
 // PUT /appointments/:id
 async function update(req, res) {
   try {
-
     const {
-  lawyer_id,
-  date,
-  law_type,
-  case_type,
-  short_description,
-  slot_start_time,
-  slot_end_time,
-  appointment_mode
-} = req.body;
+      lawyer_id,
+      date,
+      law_type,
+      case_type,
+      short_description,
+      slot_start_time,
+      slot_end_time,
+      appointment_mode
+    } = req.body;
+
     const result = await updateAppointment(
       { lawyer_id, date, law_type, case_type, short_description, slot_start_time, slot_end_time, appointment_mode },
       req.params.id,
-      req.user.id   // only update your own appointment
+      req.user.id,
+      req.user.role
     );
 
     if (result.affectedRows === 0)
@@ -192,10 +199,11 @@ async function update(req, res) {
   }
 }
 
+
 // DELETE /appointments/:id
 async function remove(req, res) {
   try {
-    const result = await deleteAppointment(req.params.id, req.user.id);
+    const result = await deleteAppointment(req.params.id, req.user.id, req.user.role);
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Not found or not yours" });
     res.json({ message: "Appointment deleted" });

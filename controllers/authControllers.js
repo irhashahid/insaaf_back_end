@@ -151,7 +151,13 @@ async function forgotPassword(req, res) {
                     font-weight: bold; margin: 16px 0;">
             Reset Password
           </a>
-          <p style="color: #888; font-size: 12px;">
+          <p style="margin-top: 10px; font-size: 13px; color: #555;">
+            Or copy your reset token directly:
+          </p>
+          <div style="background-color: #f4ede6; color: #3D2B1F; padding: 10px 14px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all;">
+            ${token}
+          </div>
+          <p style="color: #888; font-size: 12px; margin-top: 16px;">
             If you did not request this, please ignore this email.
           </p>
         </div>

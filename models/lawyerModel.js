@@ -4,14 +4,33 @@ const { getDB } = require("../config/db");
 async function getAllLawyers() {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT * FROM users WHERE role = 'lawyer'"
+    `SELECT 
+      u.id, u.name, u.email, u.phone, u.specialization, u.category, u.location, 
+      u.experience, u.cases, u.license, u.status, u.role, u.subscription_expiry,
+      COALESCE(ROUND(AVG(r.rating), 1), 0.0) AS rating,
+      COUNT(r.id) AS total_reviews
+     FROM users u
+     LEFT JOIN ratings r ON u.id = r.lawyer_id
+     WHERE u.role = 'lawyer'
+     GROUP BY u.id`
   );
   return rows;
 }
 
 async function getLawyerById(id) {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM users WHERE id = ? AND role = 'lawyer'", [id]);
+  const [rows] = await db.execute(
+    `SELECT 
+      u.id, u.name, u.email, u.phone, u.specialization, u.category, u.location, 
+      u.experience, u.cases, u.license, u.status, u.role, u.subscription_expiry,
+      COALESCE(ROUND(AVG(r.rating), 1), 0.0) AS rating,
+      COUNT(r.id) AS total_reviews
+     FROM users u
+     LEFT JOIN ratings r ON u.id = r.lawyer_id
+     WHERE u.id = ? AND u.role = 'lawyer'
+     GROUP BY u.id`,
+    [id]
+  );
   return rows;
 }
 
@@ -57,18 +76,96 @@ async function setLawyerStatus(id, status) {
 
 async function getApprovedLawyers() {
   const db = getDB();
-  const [rows] = await db.execute("SELECT * FROM users WHERE status = 1 AND role = 'lawyer'");
+  const [rows] = await db.execute(
+    `SELECT 
+      u.id, u.name, u.email, u.phone, u.specialization, u.category, u.location, 
+      u.experience, u.cases, u.license, u.status, u.role, u.subscription_expiry,
+      COALESCE(ROUND(AVG(r.rating), 1), 0.0) AS rating,
+      COUNT(r.id) AS total_reviews
+     FROM users u
+     LEFT JOIN ratings r ON u.id = r.lawyer_id
+     WHERE u.status = 1 
+       AND u.role = 'lawyer'
+       AND (u.subscription_expiry IS NOT NULL AND u.subscription_expiry > NOW())
+     GROUP BY u.id`
+  );
   return rows;
 }
 
-// Renew lawyer subscription by 30 days
+// Renew lawyer subscription by 30 days and record in subscription_records
 async function renewLawyerSubscription(id) {
   const db = getDB();
+
+  // 1. Fetch current subscription fee from settings
+  let fee = 2000;
+  try {
+    const [settings] = await db.execute(
+      "SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'"
+    );
+    if (settings.length > 0) {
+      fee = parseFloat(settings[0].setting_value) || 2000;
+    }
+  } catch (e) {
+    // fallback if settings table not queried
+  }
+
+  // 2. Extend subscription expiry by 30 days
   const [result] = await db.execute(
     `UPDATE users 
      SET subscription_expiry = DATE_ADD(IFNULL(subscription_expiry, NOW()), INTERVAL 30 DAY)
      WHERE id = ? AND role = 'lawyer'`,
     [id]
+  );
+
+  if (result.affectedRows > 0) {
+    // 3. Fetch updated expiry date
+    const [userRows] = await db.execute(
+      "SELECT subscription_expiry FROM users WHERE id = ?",
+      [id]
+    );
+    const newExpiry = userRows[0]?.subscription_expiry || null;
+
+    // 4. Update pending record or insert active record in subscription_records
+    try {
+      const [pendingRows] = await db.execute(
+        "SELECT id FROM subscription_records WHERE lawyer_id = ? AND status = 'pending' ORDER BY paid_date DESC LIMIT 1",
+        [id]
+      );
+      if (pendingRows.length > 0) {
+        await db.execute(
+          "UPDATE subscription_records SET status = 'active', expiry_date = ? WHERE id = ?",
+          [newExpiry, pendingRows[0].id]
+        );
+      } else {
+        await db.execute(
+          `INSERT INTO subscription_records 
+           (lawyer_id, amount, paid_date, expiry_date, payment_method, status)
+           VALUES (?, ?, NOW(), ?, 'JazzCash/Cash', 'active')`,
+          [id, fee, newExpiry]
+        );
+      }
+    } catch (err) {
+      console.warn("Could not record in subscription_records:", err.message);
+    }
+  }
+
+  return result;
+}
+
+// Lawyer submits JazzCash payment proof for subscription renewal
+async function submitSubscriptionPayment(lawyerId, { amount, payment_method, transaction_id, payment_receipt }) {
+  const db = getDB();
+  const [result] = await db.execute(
+    `INSERT INTO subscription_records 
+     (lawyer_id, amount, paid_date, expiry_date, payment_method, transaction_id, payment_receipt, status)
+     VALUES (?, ?, NOW(), NULL, ?, ?, ?, 'pending')`,
+    [
+      lawyerId,
+      amount || 2000,
+      payment_method || 'JazzCash',
+      transaction_id || null,
+      payment_receipt || null,
+    ]
   );
   return result;
 }
@@ -91,21 +188,53 @@ async function getSubscriptionStats() {
     "SELECT id, name, email, subscription_expiry FROM users WHERE role = 'lawyer'"
   );
 
-  const [settings] = await db.execute(
-    "SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'"
-  );
+  let subscriptionFee = 2000;
+  try {
+    const [settings] = await db.execute(
+      "SELECT setting_value FROM settings WHERE setting_key = 'subscription_fee'"
+    );
+    if (settings.length > 0) subscriptionFee = settings[0].setting_value;
+  } catch (e) {}
 
   const now = new Date();
-
   const activeCount = lawyers.filter(l => l.subscription_expiry && new Date(l.subscription_expiry) > now).length;
   const expiredCount = lawyers.length - activeCount;
-  const subscriptionFee = settings.length > 0 ? settings[0].setting_value : 0;
 
   return { 
     activeCount,
     expiredCount,
     subscriptionFee,
-    lawyers };
+    lawyers 
+  };
+}
+
+// Get all subscription records for admin
+async function getSubscriptionRecords() {
+  const db = getDB();
+  try {
+    const [rows] = await db.execute(
+      `SELECT 
+        sr.id,
+        sr.lawyer_id,
+        sr.amount,
+        sr.paid_date,
+        sr.expiry_date,
+        sr.payment_method,
+        sr.transaction_id,
+        sr.payment_receipt,
+        sr.status,
+        u.name AS lawyer_name,
+        u.email AS lawyer_email,
+        u.phone AS lawyer_phone
+       FROM subscription_records sr
+       JOIN users u ON sr.lawyer_id = u.id
+       ORDER BY sr.paid_date DESC`
+    );
+    return rows;
+  } catch (err) {
+    console.warn("Error fetching subscription_records:", err.message);
+    return [];
+  }
 }
 
 module.exports = {
@@ -117,6 +246,8 @@ module.exports = {
   setLawyerStatus,
   getApprovedLawyers,
   renewLawyerSubscription,
+  submitSubscriptionPayment,
   revokeLawyerSubscription,
-  getSubscriptionStats
+  getSubscriptionStats,
+  getSubscriptionRecords
 };
