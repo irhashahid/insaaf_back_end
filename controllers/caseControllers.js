@@ -8,8 +8,12 @@ const {
   getApprovedCases,
   getCasesByClient,  //  add for role 
   getCasesByLawyer,  //  add for role
-  getAdminStats,  //  add for admin dashboard 
+  getAdminStats,  //  admin dashboard 
+  getLawyerStats, //  lawyer dashboard
 } = require("../models/caseModel");
+
+const { createNotification } = require("../models/notificationModel");
+const { getDB } = require("../config/db");
 
 async function index(req, res) {
   try {
@@ -62,42 +66,65 @@ async function remove(req, res) {
 
 async function updateStatus(req, res) {
   try {
-
-    const allowed = [
-      "pending",
-      "approved",
-      "rejected",
-      "hearing",
-      "closed"
-    ];
-
+    const allowed = ["pending", "approved", "rejected", "hearing", "closed"];
     const status = req.params.status.toLowerCase();
 
     if (!allowed.includes(status)) {
-      return res.status(400).json({
-        error: "Invalid status"
-      });
+      return res.status(400).json({ error: "Invalid status" });
     }
 
-    const result = await setCaseStatus(
-      req.params.id,
-      status
-    );
+    const result = await setCaseStatus(req.params.id, status);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({
-        error: "Case not found"
-      });
+      return res.status(404).json({ error: "Case not found" });
     }
 
-    res.json({
-      message: "Status updated successfully"
-    });
+    // notify client about case status change
+    try {
+      const db = getDB();
+      const [caseRows] = await db.execute(
+        "SELECT client_id, lawyer_id FROM cases WHERE id = ?",
+        [req.params.id]
+      );
 
+      if (caseRows.length > 0) {
+        // fetch lawyer name first
+        const [lawyerRows] = await db.execute(
+          "SELECT name FROM users WHERE id = ?",
+          [caseRows[0].lawyer_id]
+        );
+        const lawyerName = lawyerRows[0]?.name ?? "Your lawyer";
+
+        // notify client
+        await createNotification({
+          user_id: caseRows[0].client_id,
+          title: "Case Status Updated",
+          body: `${lawyerName} has updated your case status to ${status}`,
+          type: "case",
+          ref_id: parseInt(req.params.id),
+        });
+
+        // notify admin
+        const [admins] = await db.execute(
+          "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+        );
+        if (admins.length > 0) {
+          await createNotification({
+            user_id: admins[0].id,
+            title: "Case Status Updated",
+            body: `${lawyerName} updated a case status to ${status}`,
+            type: "case",
+            ref_id: parseInt(req.params.id),
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.warn("Could not send case status notification:", notifErr.message);
+    }
+
+    res.json({ message: "Status updated successfully" });
   } catch (err) {
-    res.status(500).json({
-      error: err.message
-    });
+    res.status(500).json({ error: err.message });
   }
 }
 
@@ -141,4 +168,13 @@ async function adminStats(req, res) {
   }
 }
 
-module.exports = { index, show, create, update, remove, updateStatus, approved, myCases, adminStats, };
+// GET /cases/lawyer-stats   ..lawyer dashboard monthly stats
+async function lawyerStats(req, res) {
+  try {
+    res.json(await getLawyerStats(req.user.id));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { index, show, create, update, remove, updateStatus, approved, myCases, adminStats, lawyerStats };

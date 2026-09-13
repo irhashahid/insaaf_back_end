@@ -1,4 +1,3 @@
-const { submitPayment } = require("../models/appointModel");
 const {
   getAllLawyers,
   getLawyerById,
@@ -111,12 +110,33 @@ async function renewSubscription(req, res) {
       type: "account",
       ref_id: null,
     });
+    const db = getDB();
+    const [admins] = await db.execute(
+      "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+    );
+    if (admins.length > 0) {
+      //get alwywer nae
+      const [lawyer] = await db.execute(
+        "SELECT name FROM users WHERE id = ?",
+        [req.params.id]
+      );
+      const lawyerName = lawyer[0]?.name ?? "A lawyer";
+
+      await createNotification({
+        user_id: admins[0].id,
+        title: "Subscription Payment Received",
+        body: `${lawyerName} has renewed their subscription for 30 days`,
+        type: "account",
+        ref_id: parseInt(req.params.id),
+      });
+    }
 
     res.json({ message: "Subscription renewed successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
+
 async function SubscriptionStats(req, res) {
   try {
     const stats = await getSubscriptionStats(); // this now callss the model fntion
@@ -199,7 +219,7 @@ async function submitSubscription(req, res) {
           user_id: admin.id,
           title: "Subscription Payment Submitted",
           body: `${lawyerName} has submitted subscription payment proof for review`,
-          type: "payment",
+          type: "account",
           ref_id: result.insertId,
         });
       }

@@ -17,7 +17,7 @@ const {
   updateBasicProfile,
   findUserById,
   getAllLawyersWithLicenses,
- } = require("../models/userModel"); //  updated
+ } = require("../models/userModel");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
@@ -59,7 +59,7 @@ async function register(req, res) {
         cases: null,
         license: licensePath,
       });
-      // ← ADD HERE — notify admin when new lawyer registers
+      // notify admin whn new lwyr rgsters
       const db = getDB();
       const [admins] = await db.execute(
         "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
@@ -94,7 +94,7 @@ async function login(req, res) {
     if (!isMatch)
       return res.status(401).json({ error: "Invalid credentials" });
  
-      //role based access control, from the users table (lawyer / client / admin)
+      //role based access control, from the users table
     const token = jwt.sign(
   {
     id: user.id,
@@ -328,7 +328,7 @@ async function changePassword(req, res) {
   }
 }
 
-// GET /lawyer-licenses — admin only
+// GET /lawyer-licenses ...admin only
 async function getLawyerLicenses(req, res) {
   try {
     const lawyers = await getAllLawyersWithLicenses();

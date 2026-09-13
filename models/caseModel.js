@@ -171,6 +171,74 @@ async function getAdminStats() {
     total_clients: totalClients[0].count,
   };
 }
+// Lwer dshbrd stats
+async function getLawyerStats(lawyerId) {
+  const db = getDB();
+
+  // ttal ernings frm approved payments fr this lwyr
+  const [totalEarnings] = await db.execute(
+    "SELECT COALESCE(SUM(payment_amount), 0) AS total FROM appointments WHERE payment_status = 1 AND lawyer_id = ?",
+    [lawyerId]
+  );
+
+  // mothly ernings like th current month) fr this lwyr
+  const [monthlyEarnings] = await db.execute(
+    `SELECT COALESCE(SUM(payment_amount), 0) AS monthly 
+     FROM appointments 
+     WHERE payment_status = 1 
+     AND lawyer_id = ?
+     AND MONTH(created_at) = MONTH(NOW()) 
+     AND YEAR(created_at) = YEAR(NOW())`,
+    [lawyerId]
+  );
+
+  // total paymnts count fr this lwyr
+  const [totalPayments] = await db.execute(
+    "SELECT COUNT(*) AS count FROM appointments WHERE payment_status = 1 AND lawyer_id = ?",
+    [lawyerId]
+  );
+
+  // total cases for this lwyr
+  const [totalCases] = await db.execute(
+    "SELECT COUNT(*) AS count FROM cases WHERE lawyer_id = ?",
+    [lawyerId]
+  );
+
+  // pnding cases for this lwyr
+  const [pendingCases] = await db.execute(
+    "SELECT COUNT(*) AS count FROM cases WHERE lawyer_id = ? AND case_status = 'pending'",
+    [lawyerId]
+  );
+
+  // active cases (hearing stage) for this lawyer
+  const [activeCases] = await db.execute(
+    "SELECT COUNT(*) AS count FROM cases WHERE lawyer_id = ? AND case_status = 'hearing'",
+    [lawyerId]
+  );
+
+  // total appointments for this lawyer
+  const [totalAppointments] = await db.execute(
+    "SELECT COUNT(*) AS count FROM appointments WHERE lawyer_id = ?",
+    [lawyerId]
+  );
+
+  // pnding appointnts for this lwyr
+  const [pendingAppointments] = await db.execute(
+    "SELECT COUNT(*) AS count FROM appointments WHERE lawyer_id = ? AND status = 'pending'",
+    [lawyerId]
+  );
+
+  return {
+    total_earnings: totalEarnings[0].total,
+    monthly_earnings: monthlyEarnings[0].monthly,
+    total_payments: totalPayments[0].count,
+    total_cases: totalCases[0].count,
+    pending_cases: pendingCases[0].count,
+    active_cases: activeCases[0].count,
+    total_appointments: totalAppointments[0].count,
+    pending_appointments: pendingAppointments[0].count,
+  };
+}
 
 module.exports = {
   getAllCases,
@@ -183,4 +251,5 @@ module.exports = {
   getCasesByClient,
   getCasesByLawyer,
   getAdminStats, // admn dashbrd mnthly stats
+  getLawyerStats, // lwyr dashbrd mnthly stats
 };

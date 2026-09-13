@@ -137,31 +137,51 @@ async function create(req, res) {
       targetClientId
     );
 
-    // fetch client name for personalized notification
-    try {
-      const db = getDB();
-      const [clientRows] = await db.execute(
-        "SELECT name FROM users WHERE id = ?",
-        [targetClientId]
-      );
-      const clientName = clientRows[0]?.name ?? "A client";
+    // fetch client name and send notifications
+try {
+  const db = getDB();
+  const [clientRows] = await db.execute(
+    "SELECT name FROM users WHERE id = ?",
+    [targetClientId]
+  );
+  const clientName = clientRows[0]?.name ?? "A client";
+// fetch lawyer name
+  const [lawyerRows] = await db.execute(
+    "SELECT name FROM users WHERE id = ?",
+    [lawyer_id]
+  );
+  const lawyerName = lawyerRows[0]?.name ?? "A lawyer";
+  
+  // notify lawyer
+  await createNotification({
+    user_id: lawyer_id,
+    title: "New Appointment Request",
+    body: `${clientName} has booked an appointment with you`,
+    type: "appointment",
+    ref_id: result.insertId,
+  });
 
-      // notify lawyer about new appointment request
-      await createNotification({
-        user_id: lawyer_id,
-        title: "New Appointment Request",
-        body: `${clientName} has booked an appointment with you`,
-        type: "appointment",
-        ref_id: result.insertId,
-      });
-    } catch (notifErr) {
-      console.warn("Could not dispatch appointment notification:", notifErr.message);
-    }
-
-    res.status(201).json({
-      message: "Appointment created",
-      id: result.insertId
+  // notify admin
+  const [admins] = await db.execute(
+    "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+  );
+  if (admins.length > 0) {
+    await createNotification({
+      user_id: admins[0].id,
+      title: "New Appointment Booked",
+      body: `${clientName} has booked an appointment with ${lawyerName}`,
+      type: "account",
+      ref_id: result.insertId,
     });
+  }
+} catch (notifErr) {
+  console.warn("Could not dispatch appointment notification:", notifErr.message);
+}
+
+res.status(201).json({
+  message: "Appointment created",
+  id: result.insertId
+});
 
   } catch (err) {
     res.status(500).json({
@@ -277,11 +297,11 @@ async function pay(req, res) {
     const { payment_mode, payment_receipt } = req.body;
 
     if (!payment_mode)
-  return res.status(400).json({ error: "payment_mode required: Pay Online | Pay in Cash" });
+      return res.status(400).json({ error: "payment_mode required: Pay Online | Pay in Cash" });
 
     const allowed = ["Pay Online", "Pay in Cash"];
-if (!allowed.includes(payment_mode))
-  return res.status(400).json({ error: "payment_mode must be Pay Online or Pay in Cash" });
+    if (!allowed.includes(payment_mode))
+      return res.status(400).json({ error: "payment_mode must be Pay Online or Pay in Cash" });
 
     const result = await submitPayment(
       req.params.id,
@@ -293,27 +313,42 @@ if (!allowed.includes(payment_mode))
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found or not yours" });
 
-    //  ADDED: notify lawyer that client submit nd the payment proof
     const db = getDB();
-const [appt] = await db.execute(
-  "SELECT lawyer_id FROM appointments WHERE id = ?", [req.params.id]
-);
-if (appt.length > 0) {
+    const [appt] = await db.execute(
+      "SELECT lawyer_id FROM appointments WHERE id = ?", [req.params.id]
+    );
 
-  // fetch client name
-  const [clientRows] = await db.execute(
-    "SELECT name FROM users WHERE id = ?", [req.user.id]
-  );
-  const clientName = clientRows[0]?.name ?? "A client";
+    if (appt.length > 0) {
+      // fetch client name FIRST
+      const [clientRows] = await db.execute(
+        "SELECT name FROM users WHERE id = ?", [req.user.id]
+      );
+      const clientName = clientRows[0]?.name ?? "A client";
 
-  await createNotification({
-    user_id: appt[0].lawyer_id,
-    title: "Payment Submitted",
-    body: `${clientName} has submitted payment for your review`,
-    type: "payment",
-    ref_id: parseInt(req.params.id),
-  });
-}
+      // notify lawyer
+      await createNotification({
+        user_id: appt[0].lawyer_id,
+        title: "Payment Submitted",
+        body: `${clientName} has submitted payment for your review`,
+        type: "payment",
+        ref_id: parseInt(req.params.id),
+      });
+
+      // notify admin
+      const [admins] = await db.execute(
+        "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+      );
+      if (admins.length > 0) {
+        await createNotification({
+          user_id: admins[0].id,
+          title: "Payment Submitted",
+          body: `${clientName} has submitted payment for an appointment`,
+          type: "account",
+          ref_id: parseInt(req.params.id),
+        });
+      }
+    }
+
     res.json({ message: "Payment submitted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -329,28 +364,45 @@ async function approvePay(req, res) {
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Appointment not found or not yours" });
 
-  //  ADDED: notify client who's paymnt is apporoved
-  const db = getDB();
-const [appt] = await db.execute(
-  "SELECT client_id, lawyer_id FROM appointments WHERE id = ?", [req.params.id]
-);
-if (appt.length > 0) {
+    const db = getDB();
+    const [appt] = await db.execute(
+      "SELECT client_id, lawyer_id FROM appointments WHERE id = ?",
+      [req.params.id]
+    );
 
-  // fetch lawyer name
-  const [lawyerRows] = await db.execute(
-    "SELECT name FROM users WHERE id = ?", [appt[0].lawyer_id]
-  );
-  const lawyerName = lawyerRows[0]?.name ?? "Your lawyer";
+    if (appt.length > 0) {
+      // fetch lawyer name
+      const [lawyerRows] = await db.execute(
+        "SELECT name FROM users WHERE id = ?",
+        [appt[0].lawyer_id]
+      );
+      const lawyerName = lawyerRows[0]?.name ?? "Your lawyer";
 
-  await createNotification({
-    user_id: appt[0].client_id,
-    title: "Payment Approved",
-    body: `${lawyerName} has approved your payment. Appointment is fully booked!`,
-    type: "payment",
-    ref_id: parseInt(req.params.id),
-  });
-}
-  res.json({ message: "Payment approved, appointment fully booked" });
+      // notify client
+      await createNotification({
+        user_id: appt[0].client_id,
+        title: "Payment Approved",
+        body: `${lawyerName} has approved your payment. Appointment is fully booked!`,
+        type: "payment",
+        ref_id: parseInt(req.params.id),
+      });
+
+      // notify admin
+      const [admins] = await db.execute(
+        "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+      );
+      if (admins.length > 0) {
+        await createNotification({
+          user_id: admins[0].id,
+          title: "Payment Approved",
+          body: `${lawyerName} has approved client payment for appointment`,
+          type: "account",
+          ref_id: parseInt(req.params.id),
+        });
+      }
+    }
+
+    res.json({ message: "Payment approved, appointment fully booked" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -366,28 +418,42 @@ async function convertCase(req, res) {
         error: "Appointment not found, not yours, or payment not approved",
       });
 
-      //  ADDED: notify client about their appointmneet became a case
-      const db = getDB();
-const [appt] = await db.execute(
-  "SELECT client_id, lawyer_id FROM appointments WHERE id = ?", [req.params.id]
-);
-if (appt.length > 0) {
-  
-  // fetch lawyer name
-  const [lawyerRows] = await db.execute(
-    "SELECT name FROM users WHERE id = ?", [appt[0].lawyer_id]
-  );
-  const lawyerName = lawyerRows[0]?.name ?? "Your lawyer";
+    const db = getDB();
+    const [appt] = await db.execute(
+      "SELECT client_id, lawyer_id FROM appointments WHERE id = ?", [req.params.id]
+    );
 
-  await createNotification({
-    user_id: appt[0].client_id,
-    title: "Case Created",
-    body: `${lawyerName} has converted your appointment into an active case`,
-    type: "case",
-    ref_id: result.insertId,
-  });
-}
-    
+    if (appt.length > 0) {
+      // fetch lawyer name FIRST
+      const [lawyerRows] = await db.execute(
+        "SELECT name FROM users WHERE id = ?", [appt[0].lawyer_id]
+      );
+      const lawyerName = lawyerRows[0]?.name ?? "Your lawyer";
+
+      // notify client
+      await createNotification({
+        user_id: appt[0].client_id,
+        title: "Case Created",
+        body: `${lawyerName} has converted your appointment into an active case`,
+        type: "case",
+        ref_id: result.insertId,
+      });
+
+      // notify admin
+      const [admins] = await db.execute(
+        "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+      );
+      if (admins.length > 0) {
+        await createNotification({
+          user_id: admins[0].id,
+          title: "Case Created",
+          body: `${lawyerName} has converted an appointment into a case`,
+          type: "account",
+          ref_id: result.insertId,
+        });
+      }
+    }
+
     res.status(201).json({
       message: "Appointment converted to case successfully",
       caseId: result.insertId,

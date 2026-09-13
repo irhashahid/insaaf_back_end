@@ -92,11 +92,11 @@ async function getApprovedLawyers() {
   return rows;
 }
 
-// Renew lawyer subscription by 30 days and record in subscription_records
+// Renew lwyer sbscrption by 30 days nd recrd in subscription_records
 async function renewLawyerSubscription(id) {
   const db = getDB();
 
-  // 1. Fetch current subscription fee from settings
+  // 1. Fetch crunt sbscrption fee frm setngs
   let fee = 2000;
   try {
     const [settings] = await db.execute(
@@ -109,7 +109,7 @@ async function renewLawyerSubscription(id) {
     // fallback if settings table not queried
   }
 
-  // 2. Extend subscription expiry by 30 days
+  // 2. Extnd sbscrption expiry by 30 days
   const [result] = await db.execute(
     `UPDATE users 
      SET subscription_expiry = DATE_ADD(IFNULL(subscription_expiry, NOW()), INTERVAL 30 DAY)
@@ -118,14 +118,14 @@ async function renewLawyerSubscription(id) {
   );
 
   if (result.affectedRows > 0) {
-    // 3. Fetch updated expiry date
+    // Fetch updtd expiry date
     const [userRows] = await db.execute(
       "SELECT subscription_expiry FROM users WHERE id = ?",
       [id]
     );
     const newExpiry = userRows[0]?.subscription_expiry || null;
 
-    // 4. Update pending record or insert active record in subscription_records
+    // 4. Updte pnding recrd or insrt active record in subscription_records
     try {
       const [pendingRows] = await db.execute(
         "SELECT id FROM subscription_records WHERE lawyer_id = ? AND status = 'pending' ORDER BY paid_date DESC LIMIT 1",
