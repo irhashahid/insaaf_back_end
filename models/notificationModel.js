@@ -7,13 +7,13 @@ async function getNotificationsByUser(userId) {
     `SELECT * FROM notifications 
      WHERE user_id = ? 
      ORDER BY created_at DESC
-     LIMIT 30`,  // limit to last 30 notifications
+     LIMIT 30`,
     [userId]
   );
   return rows;
 }
 
-// GET unread count for logged-in user
+// GET unread count fr the login usr (client+ lwyr)
 async function getUnreadCount(userId) {
   const db = getDB();
   const [rows] = await db.execute(
@@ -23,7 +23,7 @@ async function getUnreadCount(userId) {
   return rows[0];
 }
 
-// CREATE notification — called internally from other controllers
+// CREATE notftn
 async function createNotification({ user_id, title, body, type, ref_id }) {
   const db = getDB();
   const [result] = await db.execute(
@@ -34,7 +34,7 @@ async function createNotification({ user_id, title, body, type, ref_id }) {
   return result;
 }
 
-// MARK single notification as read
+// MARK sngl notfshn as read
 async function markNotificationRead(id, userId) {
   const db = getDB();
   const [result] = await db.execute(
@@ -44,7 +44,7 @@ async function markNotificationRead(id, userId) {
   return result;
 }
 
-// MARK ALL notifications as read
+// MARK ALL notfctns as read
 async function markAllRead(userId) {
   const db = getDB();
   const [result] = await db.execute(
@@ -54,7 +54,7 @@ async function markAllRead(userId) {
   return result;
 }
 
-// GET all notifictns (fr admin) — only notfctions WHERE user_id = admn's id
+// GET all notfctns for admn.. only account type
 async function getAllNotifications(adminId) {
   const db = getDB();
   const [rows] = await db.execute(
@@ -62,15 +62,17 @@ async function getAllNotifications(adminId) {
      WHERE user_id = ? AND type = 'account'
      ORDER BY created_at DESC
      LIMIT 30`,
-    [adminId]  //  only notifications sent to this admin
+    [adminId]
   );
   return rows;
 }
-  // GET unread count for admin (all)
-async function getTotalUnreadCount() {
+
+// GET unread count fr admn
+async function getTotalUnreadCount(adminId) {  //adminId parameter
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT COUNT(*) AS unread FROM notifications WHERE is_read = 0"
+    "SELECT COUNT(*) AS unread FROM notifications WHERE is_read = 0 AND type = 'account' AND user_id = ?",
+    [adminId]  // filtrs by admn's id only
   );
   return rows[0];
 }
@@ -81,6 +83,6 @@ module.exports = {
   createNotification,
   markNotificationRead,
   markAllRead,
-  getAllNotifications,   
-  getTotalUnreadCount,   
+  getAllNotifications,
+  getTotalUnreadCount,
 };
