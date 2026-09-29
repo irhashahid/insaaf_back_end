@@ -33,7 +33,7 @@ async function markRead(req, res) {
 // PATCH /notifications/read-all
 async function markAllAsRead(req, res) {
   try {
-    await markAllRead(req.user.id);
+    await markAllRead(req.user.id, req.user.role);
     res.json({ message: "All notifications marked as read" });
   } catch (err) {
     res.status(500).json({ error: err.message });

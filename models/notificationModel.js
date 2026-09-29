@@ -45,8 +45,16 @@ async function markNotificationRead(id, userId) {
 }
 
 // MARK ALL notfctns as read
-async function markAllRead(userId) {
+async function markAllRead(userId, role = null) {
   const db = getDB();
+  if (role === "admin") {
+    const [result] = await db.execute(
+      `UPDATE notifications SET is_read = 1 
+       WHERE user_id = ? OR user_id IN (SELECT id FROM users WHERE role = 'admin')`,
+      [userId]
+    );
+    return result;
+  }
   const [result] = await db.execute(
     "UPDATE notifications SET is_read = 1 WHERE user_id = ?",
     [userId]
@@ -54,25 +62,26 @@ async function markAllRead(userId) {
   return result;
 }
 
-// GET all notfctns for admn.. only account type
+// GET all notifications for admin (all relevant types, for all admins)
 async function getAllNotifications(adminId) {
   const db = getDB();
   const [rows] = await db.execute(
     `SELECT * FROM notifications 
-     WHERE user_id = ? AND type = 'account'
+     WHERE user_id = ? OR user_id IN (SELECT id FROM users WHERE role = 'admin')
      ORDER BY created_at DESC
-     LIMIT 30`,
+     LIMIT 50`,
     [adminId]
   );
   return rows;
 }
 
-// GET unread count fr admn
-async function getTotalUnreadCount(adminId) {  //adminId parameter
+// GET unread count for admin
+async function getTotalUnreadCount(adminId) {
   const db = getDB();
   const [rows] = await db.execute(
-    "SELECT COUNT(*) AS unread FROM notifications WHERE is_read = 0 AND type = 'account' AND user_id = ?",
-    [adminId]  // filtrs by admn's id only
+    `SELECT COUNT(*) AS unread FROM notifications 
+     WHERE is_read = 0 AND (user_id = ? OR user_id IN (SELECT id FROM users WHERE role = 'admin'))`,
+    [adminId]
   );
   return rows[0];
 }
