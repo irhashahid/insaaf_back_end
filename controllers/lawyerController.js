@@ -11,6 +11,7 @@ const {
   revokeLawyerSubscription,
   getSubscriptionStats,
   getSubscriptionRecords,
+  toggleLawyerActive,
 } = require("../models/lawyerModel");
 
 const { createNotification } = require("../models/notificationModel"); //  ADDED for notify
@@ -236,6 +237,35 @@ async function submitSubscription(req, res) {
   }
 }
 
+// PATCH /lawyers/:id/toggle-active
+// body: { is_active: true/false }
+async function toggleActive(req, res) {
+  try {
+    const { is_active } = req.body;
+
+    if (is_active === undefined)
+      return res.status(400).json({ error: "is_active is required (true or false)" });
+
+    const result = await toggleLawyerActive(req.params.id, is_active);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Lawyer not found" });
+
+    const statusText = is_active ? "activated" : "deactivated";
+   // notify lawyer
+    await createNotification({
+      user_id: req.params.id,
+      title: `Account ${is_active ? "Activated" : "Deactivated"}`,
+      body: `Your lawyer account has been ${statusText} by admin`,
+      type: "account",
+      ref_id: null,
+    });
+
+    res.json({ message: `Lawyer ${statusText} successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+} 
 module.exports = { 
   index, 
   show, 
@@ -248,5 +278,6 @@ module.exports = {
   revokeSubscription, 
   SubscriptionStats,
   subscriptionRecords,
-  submitSubscription
+  submitSubscription,
+  toggleActive
 };

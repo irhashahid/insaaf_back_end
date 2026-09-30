@@ -237,6 +237,17 @@ async function getSubscriptionRecords() {
   }
 }
 
+// Toggle lwyr active/deactivate status
+async function toggleLawyerActive(id, isActive) {
+  const db = getDB();
+  // isActive true -activate (status=1), fls- deactivate (status=2)
+  const newStatus = isActive ? 1 : 2;
+  const [result] = await db.execute(
+    "UPDATE users SET status = ? WHERE id = ? AND role = 'lawyer'",
+    [newStatus, id]
+  );
+  return result;
+}
 module.exports = {
   getAllLawyers,
   getLawyerById,
@@ -249,5 +260,6 @@ module.exports = {
   submitSubscriptionPayment,
   revokeLawyerSubscription,
   getSubscriptionStats,
-  getSubscriptionRecords
+  getSubscriptionRecords,
+  toggleLawyerActive
 };

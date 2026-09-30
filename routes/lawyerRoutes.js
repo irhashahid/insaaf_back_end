@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const {
-  index, show, create, update, remove, updateStatus, approved, renewSubscription, revokeSubscription, SubscriptionStats, subscriptionRecords, submitSubscription,
+  index, show, create, update, remove, updateStatus, approved, renewSubscription, revokeSubscription, SubscriptionStats, subscriptionRecords, submitSubscription, toggleActive,
 } = require("../controllers/lawyerController");
 
 // NOTE: '/approved' must come BEFORE '/:id' to avoid route conflict
@@ -18,6 +18,7 @@ router.delete("/:id", authMiddleware, remove); //del case
 //new subsription routes
 router.patch("/:id/renew-subscription", authMiddleware, renewSubscription);   // PATCH /lawyers/5/renew-subscription
 router.patch("/:id/revoke-subscription", authMiddleware, revokeSubscription); // PATCH /lawyers/5/revoke-subscription
+router.patch("/:id/toggle-active", authMiddleware, toggleActive); // PATCH /lawyers/5/toggle-active
 router.patch("/:id/:status", authMiddleware, updateStatus); //update case status
 
 module.exports = router;
